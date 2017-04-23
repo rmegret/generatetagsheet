@@ -1,0 +1,247 @@
+﻿%if show_opening:
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg preserveAspectRatio="xMinYMin meet" width="${page_w}mm" height="${page_h}mm" viewBox="0 0 ${page_w} ${page_h}"  
+     version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<desc>Custom generation of SVG</desc>
+
+<%!
+  in2mm = 25.4
+  def apply_hint_mm(val_mm, dpi=300):
+    val_in = val_mm / in2mm
+    return round(val_in*dpi)/dpi*in2mm
+
+  halfinch=25.4/2
+%>
+
+<!-- Definitions -->
+<defs>
+  <g id="cross">
+    <g class="cross">
+        <path d="M -5 0 L 5 0 M 0 -5 L 0 5" fill="none" stroke="${crosscolor}" stroke-width="0.02"/>
+        <path d="M -5 0 L 0 0 L 0 5 A 5 5 0 0 1 -5 0" fill="none"  stroke="${crosscolor}" stroke-width="0.02"/>
+        <path d="M 5 0 L 0 0 L 0 -5 A 5 5 0 0 1 5 0" fill="none"  stroke="${crosscolor}" stroke-width="0.02"/>
+    </g>
+    <g class="ruler">
+        <g id="mmrule">
+          <path d="M -1 0 l 0 -0.8  m -1 0.8 l 0 -0.8  m -1 0.8 l 0 -0.8  m -1 0.8 l 0 -0.8  m -1 0.8 l 0 -0.8" fill="none" stroke="${crosscolor}" stroke-width="0.05"/>
+        </g>
+        <use xlink:href="#mmrule" transform="rotate(90)"/>
+        <use xlink:href="#mmrule" transform="rotate(180)"/>
+        <use xlink:href="#mmrule" transform="rotate(-90)"/>
+        <text text-anchor="start" dominant-baseline="middle" x="+1" y="-3"
+                    font-family="Helvetica" font-size="1.0"
+                    fill="#000000" xml:space="preserve">1mm</text>
+                    
+        <g id="in100rule">
+          <path d="M -1 0 l 0 3  m -1 -3 l 0 3  m -1 -3 l 0 3  m -1 -3 l 0 3  m -1 -3 l 0 4  m -1 -4 l 0 3  m -1 -3 l 0 3  m -1 -3 l 0 3  m -1 -3 l 0 3  m -1 -3 l 0 4" fill="none" stroke="${crosscolor}" stroke-width="${0.05*100/25.4}" transform="scale(${25.4/100})"/>
+        </g>
+        <use xlink:href="#in100rule" transform="rotate(90)"/>
+        <use xlink:href="#in100rule" transform="rotate(180)"/>
+        <use xlink:href="#in100rule" transform="rotate(-90)"/>
+        <text text-anchor="end" dominant-baseline="middle" x="-0.5" y="-3"
+                  font-family="Helvetica" font-size="1.0"
+                  fill="#000000" xml:space="preserve">0.01in</text>
+    </g>
+  </g>
+  <g id="crosscut">
+    <g class="cross">
+        <path d="M -2 0 L 2 0 M 0 -2 L 0 2" fill="none" stroke="#0F0" stroke-width="0.03"/>
+    </g>
+  </g>
+  <g id="checkers">
+    <g>
+      <rect x="0" y="0" width="1" height="1"/>
+      <rect x="2" y="0" width="1" height="1"/>
+      <rect x="4" y="0" width="1" height="1"/>
+      <rect x="6" y="0" width="1" height="1"/>
+      <rect x="8" y="0" width="1" height="1"/>
+      <rect x="1" y="1" width="1" height="1"/>
+      <rect x="3" y="1" width="1" height="1"/>
+      <rect x="5" y="1" width="1" height="1"/>
+      <rect x="7" y="1" width="1" height="1"/>
+      <rect x="9" y="1" width="1" height="1"/>
+      <rect x="0" y="2" width="1" height="1"/>
+      <rect x="2" y="2" width="1" height="1"/>
+      <rect x="4" y="2" width="1" height="1"/>
+      <rect x="6" y="2" width="1" height="1"/>
+      <rect x="8" y="2" width="1" height="1"/>
+      <rect x="1" y="3" width="1" height="1"/>
+      <rect x="3" y="3" width="1" height="1"/>
+      <rect x="5" y="3" width="1" height="1"/>
+      <rect x="7" y="3" width="1" height="1"/>
+      <rect x="9" y="3" width="1" height="1"/>
+      <rect x="0" y="4" width="1" height="1"/>
+      <rect x="2" y="4" width="1" height="1"/>
+      <rect x="4" y="4" width="1" height="1"/>
+      <rect x="6" y="4" width="1" height="1"/>
+      <rect x="8" y="4" width="1" height="1"/>
+      <rect x="1" y="5" width="1" height="1"/>
+      <rect x="3" y="5" width="1" height="1"/>
+      <rect x="5" y="5" width="1" height="1"/>
+      <rect x="7" y="5" width="1" height="1"/>
+      <rect x="9" y="5" width="1" height="1"/>
+      <rect x="0" y="6" width="1" height="1"/>
+      <rect x="2" y="6" width="1" height="1"/>
+      <rect x="4" y="6" width="1" height="1"/>
+      <rect x="6" y="6" width="1" height="1"/>
+      <rect x="8" y="6" width="1" height="1"/>
+      <rect x="1" y="7" width="1" height="1"/>
+      <rect x="3" y="7" width="1" height="1"/>
+      <rect x="5" y="7" width="1" height="1"/>
+      <rect x="7" y="7" width="1" height="1"/>
+      <rect x="9" y="7" width="1" height="1"/>
+      <rect x="0" y="8" width="1" height="1"/>
+      <rect x="2" y="8" width="1" height="1"/>
+      <rect x="4" y="8" width="1" height="1"/>
+      <rect x="6" y="8" width="1" height="1"/>
+      <rect x="8" y="8" width="1" height="1"/>
+      <rect x="1" y="9" width="1" height="1"/>
+      <rect x="3" y="9" width="1" height="1"/>
+      <rect x="5" y="9" width="1" height="1"/>
+      <rect x="7" y="9" width="1" height="1"/>
+      <rect x="9" y="9" width="1" height="1"/>
+    </g>
+    <g transform="translate(0,10)">
+      <rect x="0" y="0" width="10" height="5"/>
+      <rect x="0" y="6" width="10" height="4"/>
+    </g>
+    <g transform="translate(0,20)">
+      <rect x="0" y="0" width="5" height="10"/>
+      <rect x="6" y="0" width="4" height="10"/>
+    </g>
+    <g transform="translate(0,30)">
+      <rect x="0" y="5" width="10" height="1"/>
+    </g>
+    <g transform="translate(0,40)">
+      <rect x="5" y="0" width="1" height="10"/>
+    </g>
+    <g transform="translate(0,50)">
+      <rect x="0" y="0" width="10" height="1"/>
+      <rect x="0" y="2" width="10" height="1"/>
+      <rect x="0" y="4" width="10" height="1"/>
+      <rect x="0" y="6" width="10" height="1"/>
+      <rect x="0" y="8" width="10" height="1"/>      
+    </g>
+    <g transform="translate(0,60)">
+      <rect x="0" y="0" width="1" height="10"/>
+      <rect x="2" y="0" width="1" height="10"/>
+      <rect x="4" y="0" width="1" height="10"/>
+      <rect x="6" y="0" width="1" height="10"/>
+      <rect x="8" y="0" width="1" height="10"/>
+    </g>
+  </g>
+    
+  <g id="testpattern">
+  <g transform="translate(0,${halfinch*0})">
+    <% s=25.4/1200 %>
+    <text text-anchor="middle" dominant-baseline="alphabetic" dy="-1"
+                  font-family="Helvetica" font-size="1"
+                  fill="#000000" xml:space="preserve">1200ppi</text>
+    <use xlink:href="#checkers" transform="scale(${s},${s}) translate(-12,0)"/>
+    <use xlink:href="#checkers" transform="scale(${s},${s}) translate(2.5,0.5)"/>
+  </g>
+  <g transform="translate(0,${halfinch*1})">
+    <% s=25.4/600 %>
+    <text text-anchor="middle" dominant-baseline="alphabetic" dy="-1"
+                  font-family="Helvetica" font-size="1"
+                  fill="#000000" xml:space="preserve">600ppi</text>
+    <use xlink:href="#checkers" transform="scale(${s},${s}) translate(-12,0)"/>
+    <use xlink:href="#checkers" transform="scale(${s},${s}) translate(2.5,0.5)"/>
+  </g>
+  <g transform="translate(0,${halfinch*2})">
+    <% s=25.4/300 %>
+    <text text-anchor="middle" dominant-baseline="alphabetic" dy="-1"
+                  font-family="Helvetica" font-size="1"
+                  fill="#000000" xml:space="preserve">300ppi</text>
+    <use xlink:href="#checkers" transform="scale(${s},${s}) translate(-12,0)"/>
+    <use xlink:href="#checkers" transform="scale(${s},${s}) translate(2.5,0.5)"/>
+  </g>
+  <g transform="translate(0,${halfinch*3})">
+    <% s=pix2mm %>
+    <text text-anchor="middle" dominant-baseline="alphabetic" dy="-1"
+                  font-family="Helvetica" font-size="1"
+                  fill="#000000" xml:space="preserve">tag: ${"{:.1f}".format(25.4/pix2mm)}ppi</text>
+    <use xlink:href="#checkers" transform="scale(${s},${s}) translate(-12,0)"/>
+    <use xlink:href="#checkers" transform="scale(${s},${s}) translate(2.5,0.5)"/>
+  </g>
+  <g transform="translate(0,${halfinch*6})">
+    <% s=25.4/1200 %>
+    <path d="M 0 0 L ${s*4} ${1200*s} L 0 ${1200*s}" fill="black" stroke="none"/>
+  </g>
+  </g> <!-- Test pattern -->
+</defs>
+
+<g id="topgroup">
+
+<!-- Alignment Crosses -->
+
+<%
+  x0=axismargin_left
+  y0=axismargin_top
+  x1=page_w-axismargin_left
+  y1=page_h-axismargin_top
+%>
+
+<g id="alignmentCrosses">
+  <use xlink:href="#cross" transform="translate(${x0},${y0})"/>
+  <use xlink:href="#cross" transform="translate(${x1},${y0}) scale(-1,1)"/>
+  <use xlink:href="#cross" transform="translate(${x1},${y1}) scale(-1,-1)"/>
+  <use xlink:href="#cross" transform="translate(${x0},${y1}) scale(1,-1)"/>
+  
+%if show_tag_cut:
+  <use xlink:href="#crosscut" transform="translate(${x0},${y0})"/>
+  <use xlink:href="#crosscut" transform="translate(${x1},${y0}) scale(-1,1)"/>
+  <use xlink:href="#crosscut" transform="translate(${x1},${y1}) scale(-1,-1)"/>
+  <use xlink:href="#crosscut" transform="translate(${x0},${y1}) scale(1,-1)"/>
+%endif
+</g>
+
+%if show_test_patterns:
+<g id="testPatterns">
+<%
+  testpattern_cx = apply_hint_mm(page_w-halfinch,50)
+  testpattern_y0 = halfinch*6
+%>
+  <use xlink:href="#testpattern" transform="translate(${testpattern_cx},${testpattern_y0})"/>
+  
+<%
+  testpattern_cx = halfinch
+  testpattern_y0 = halfinch*6
+%>
+  <use xlink:href="#testpattern" transform="translate(${testpattern_cx},${testpattern_y0})"/>
+</g>
+%endif
+
+%endif  # show_opening
+
+
+%if show_tagpage:
+<%include file="template_page.svg"/>
+%endif
+
+
+%if show_footer:
+
+<!-- Footer -->
+
+<%! import datetime %>
+<%
+  foot_left=axismargin_left+12
+  foot_center=page_w/2
+  foot_bottom=page_h-axismargin_top+6
+%>
+
+<g id="footer" transform="translate(${foot_center},${foot_bottom})">
+    <text text-anchor="middle"
+         font-family="Helvetica" font-size="2"
+          fill="black">
+          <tspan x="0" y="0">Generated by createtagsheet.py on ${datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}. Software based upon work supported by the National Science Foundation under Grant No. 1707355 and 1633184 (Rémi Mégret, University of Puerto Rico, 2017)</tspan>
+    </text>
+</g>
+%endif
+
+%if show_closing:
+</g> <!-- topgroup -->
+</svg>
+%endif

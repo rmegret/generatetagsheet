@@ -1,0 +1,65 @@
+
+<%!
+  in2mm = 25.4
+  def apply_hint_mm(val_mm, dpi=300):
+    val_in = val_mm / in2mm
+    return round(val_in*dpi)/dpi*in2mm
+
+  halfinch=25.4/2
+%>
+
+<!-- Page Title -->
+
+<%
+  tit_left=tagsmargin_left+12
+  tit_center=tagsmargin_left+((nblocksx-1)*blockstep_x+blockwidth_x)/2
+  tit_top=tagsmargin_top-5
+%>
+
+% if show_page_title:
+    # Main title
+    
+    <%
+          tit="{family}  {tagsize:.3f}mm ({tagdpp1200:.2f}dpp@1200dpi)  {modestring}".format(family=family, tagsize=tagsize, first_id=first_id, last_id=last_id, modestring=modestring, tagdpp1200=tagdpp1200)
+          
+          if (show_tag_cut or show_tag_cutkerf):
+              tit+=" kerf={:.3f}mm={:.2f}pix".format(laserkerf_mm,laserkerf_pix)
+    %>
+    
+    <g id="title" transform="translate(${tit_center},${tit_top})">
+    <text text-anchor="middle" dominant-baseline="text-after-edge" dy="0"
+                  font-family="Helvetica" font-weight="bold" font-size="${title_fontsize}"
+                  fill="#000000" xml:space="preserve">${tit}</text>
+    </g>
+% endif
+
+
+<!-- Blocks of tags -->
+
+%for iiy in range(nblocksy):
+  %for iix in range(nblocksx):
+<%
+  block_first_id = first_id + (iix + iiy*nblocksx)*ntagsx*ntagsy
+  blockmargin_left = tagsmargin_left + iix * blockstep_x
+  blockmargin_top = tagsmargin_top + iiy * blockstep_y
+    
+  blockmargin_left = apply_hint_mm(blockmargin_left)
+  blockmargin_top = apply_hint_mm(blockmargin_top)
+  
+  block_cross_x = blockmargin_left - (blockstep_x-blockwidth_x)/2
+  block_cross_y = blockmargin_top - (blockstep_y-blockwidth_y)/2
+%>
+
+<%include file="template_block.svg" args="block_first_id=block_first_id, blockmargin_left=blockmargin_left, blockmargin_top=blockmargin_top"/>
+
+%if (iix>0) and (iiy>0):
+  <g transform="translate(${block_cross_x},${block_cross_y})">
+    <path d="M -1.5 0 L 1.5 0 M 0 -1.5 L 0 1.5" fill="none" stroke="${crosscolor}" stroke-width="0.04"/>
+    %if show_tag_cut:
+    <path d="M -1 0 L 1 0 M 0 -1 L 0 1" fill="none" stroke="#0F0" stroke-width="0.03"/>
+    %endif
+  </g>
+%endif
+
+  %endfor
+%endfor

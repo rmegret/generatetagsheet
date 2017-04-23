@@ -1,0 +1,218 @@
+
+<%page args="block_first_id, blockmargin_left, blockmargin_top"/>
+
+<%! 
+    import math 
+    import os.path
+    
+    in2mm = 25.4
+    def apply_hint_mm(val_mm, dpi=300):
+      val_in = val_mm / in2mm
+      return round(val_in*dpi)/dpi*in2mm
+
+    halfinch=25.4/2
+%>
+
+<%
+    kmin = block_first_id
+    kmax = block_first_id + ntagsx*ntagsy-1
+    
+    blockid = "{}_{}_{}".format(kmin,family,tagsize)
+%>
+
+<!-- Block of tags ${kmin}..${kmax} -->
+
+## #### BLOCK TITLE ####
+
+%if show_block_title:
+    <%
+    lefttit=family;
+    midtit="{tagsize:.3f}mm ({tagdpp1200:.1f}dpp)".format(tagsize=tagsize,tagdpp1200=tagdpp1200)
+    righttit="{kmin}..{kmax}".format(family=family, kmin=kmin, kmax=kmax)
+
+    tit_left=blockmargin_left
+    tit_top=blockmargin_top
+    tit_center=blockmargin_left+blockwidth_x/2
+    tit_right=blockmargin_left+blockwidth_x
+    %>
+    <!-- Block title -->
+    <g class="block_title" transform="translate(${tit_left},${tit_top})">
+    <text text-anchor="start" dy="-1.5"
+                  font-family="Helvetica" font-weight="bold" font-size="${block_fontsize}"
+                  fill="#000000">${lefttit}</text>
+    </g>
+    <g class="block_title" transform="translate(${tit_center},${tit_top})">
+    <text text-anchor="middle" dy="-1.5"
+                  font-family="Helvetica" font-weight="bold" font-size="${block_fontsize}"
+                  fill="#000000">${midtit}</text>
+    </g>
+    <g class="block_title" transform="translate(${tit_right},${tit_top})">
+    <text text-anchor="end" dy="-1.5"
+                  font-family="Helvetica" font-weight="bold" font-size="${block_fontsize}"
+                  fill="#000000">${righttit}</text>
+    </g>
+%endif
+%if show_block_rect:
+    <g class="block_rect" transform="translate(${blockmargin_left},${blockmargin_top})">
+    <rect x="0" y="0" width="${blockwidth_x}" height="${blockwidth_y}" fill="none" stroke="red" stroke-width="0.1"/>
+    </g>
+%endif
+
+## #### DEFINITIONS ####
+
+<!-- Definitions -->
+<%
+    cx=tagsize_pix/2
+    cy=tagsize_pix/2
+
+    # Scaling:    
+    # - SVG image assumed to have viewBox="0 0 72 72"
+    img_viewbox = 72
+    imgsc=tagsize_pix/img_viewbox
+        
+    # Outer border dimensions
+    pix_left=tagmargin2_pix
+    pix_top=tagmargin2_pix+idheight_pix
+    
+    arrowshift=0.7
+    arrowwidth=0.7
+    arrowlen=tagmargin2_pix-tagmargin1_pix
+    
+    # Complete tag with outer border
+    tagwidth2_mm  = tagwidth2_pix*pix2mm
+    tagheight2_mm = tagheight2_pix*pix2mm
+    
+    # Shift of tag top-left within cell
+    dx=(step_x-tagwidth2_mm)/2
+    dy=(step_y-tagheight2_mm)/2
+    
+    cut_left=-tagmargin1_pix-cutmargin_pix
+    cut_top=-tagmargin1_pix-cutmargin_pix-idheight_pix
+    cut_width=tagsize1_pix+2*cutmargin_pix
+    cut_height=tagsize1_pix+2*cutmargin_pix+idheight_pix
+    cut_radius=tagmargin1_pix+cutmargin_pix
+    
+    dx = apply_hint_mm(dx)
+    dy = apply_hint_mm(dy)
+%>
+<defs>
+  <g id="arrow_${blockid}">
+      <path d="M 0,0 l -${arrowlen} -${arrowwidth} l 0 ${arrowwidth} Z" fill="${arrowcolor}" stroke="none"/>
+<!--       <path d="M 0,0  l -${arrowlen} ${arrowwidth} l 0 -${arrowwidth*2} Z" fill="#red" stroke="none" transform="translate(-${arrowshift},0) scale(${(arrowlen-arrowshift)/arrowlen})"/> -->
+  </g>
+  <g id="arrow2_${blockid}">
+      <path d="M 0,0 l -${arrowlen-1} ${arrowwidth} l 0 -${arrowwidth*2} Z" fill="${arrowcolor}" stroke="none"/>
+<!--       <path d="M 0,0  l -${arrowlen-1} ${arrowwidth} l 0 -${arrowwidth*2} Z" fill="#red" stroke="none" transform="translate(-${arrowshift},0) scale(${(arrowlen-1-arrowshift)/(arrowlen-1)})"/> -->
+  </g>
+  <g id="bg_${blockid}">
+      <g class="tagbg">
+<!--         <rect x="-2" y="-3.5" width="12" height="13.5" rx="2" ry="2" fill="#888" stroke="none"/> -->
+        <!-- Border2 rectangle -->
+        <rect x="-${pix_left}" y="-${pix_top}" 
+              width="${tagwidth2_pix}" height="${tagheight2_pix}" rx="${0}" ry="${0}" 
+              fill="${border2color}" stroke="none"/>
+        
+        <!-- White markers -->
+        <!-- Left -->
+        <use xlink:href="#arrow_${blockid}" transform="translate(-1,0)"/>        
+        <use xlink:href="#arrow_${blockid}" transform="translate(-1,${tagsize_pix}) scale(1,-1)"/>
+        <use xlink:href="#arrow2_${blockid}" transform="translate(-2,${cy})"/>
+        
+        <!-- Right -->
+        <use xlink:href="#arrow_${blockid}" transform="translate(${tagsize_pix+1},0) scale(-1,1)"/>        
+        <use xlink:href="#arrow_${blockid}" transform="translate(${tagsize_pix+1},${tagsize_pix}) scale(-1,-1)"/>
+        <use xlink:href="#arrow2_${blockid}" transform="translate(${tagsize_pix+2},${cy}) scale(-1,1)"/>
+        
+        <!-- Bottom -->
+        <use xlink:href="#arrow_${blockid}" transform="translate(0,${tagsize_pix+1}) rotate(-90)"/>        
+        <use xlink:href="#arrow_${blockid}" transform="translate(${tagsize_pix},${tagsize_pix+1}) rotate(-90) scale(1,-1)"/>
+        <use xlink:href="#arrow2_${blockid}" transform="translate(${cx},${tagsize_pix+2}) rotate(-90)"/>
+        
+        <!-- Top -->
+        <use xlink:href="#arrow_${blockid}" transform="translate(${0},-${idheight_pix+tagmargin1_pix}) rotate(90) scale(1,-1)"/>
+        <use xlink:href="#arrow2_${blockid}" transform="translate(${cx},-${idheight_pix+tagmargin1_pix+1}) rotate(90)"/>
+        <use xlink:href="#arrow_${blockid}" transform="translate(${tagsize_pix},-${idheight_pix+tagmargin1_pix}) rotate(90)"/>
+        
+        <!-- Border1 rectangle -->
+        <rect x="-${tagmargin1_pix}" y="-${tagmargin1_pix+idheight_pix}" 
+              width="${tagsize1_pix}" height="${tagsize1_pix+idheight_pix}" 
+              rx="${tagmargin1_pix}" ry="${tagmargin1_pix}" 
+              fill="${border1color}" stroke="none"/>
+              
+        <!-- Tag background rectangle -->
+        <rect width="${tagsize_pix}" height="${tagsize_pix}" fill="${tagbgcolor}" stroke="none"/>
+      </g>
+  </g>
+  
+  <g id="cut_${blockid}">
+    <rect x="${cut_left}" y="${cut_top}" width="${cut_width}" height="${cut_height}" 
+          rx="${cut_radius}" ry="${cut_radius}" 
+          fill="none" stroke="#0F0" stroke-width="${cutweight_pix}"/>
+  </g>
+  <g id="cutkerf_${blockid}">
+    <rect x="${cut_left}" y="${cut_top}" width="${cut_width}" height="${cut_height}" 
+          rx="${cut_radius}" ry="${cut_radius}" 
+          fill="none" stroke="#FF0" stroke-opacity="0.5" stroke-width="${laserkerf_pix}"/>
+  </g>
+</defs>
+
+## #### TAG GRID ####
+
+%for iy in range(0,ntagsy):
+  %for ix in range(0,ntagsx):
+    
+    <%
+    id=ix+ntagsx*iy+block_first_id
+    
+    if (id>maxid):
+        continue
+  
+    # Cell origin
+    x=blockmargin_left+ix*step_x
+    y=blockmargin_top+iy*step_y
+    
+    x = apply_hint_mm(x)
+    y = apply_hint_mm(y)
+
+    imname = reltagdir +"/"+ tagfiles.format(id=id)
+    absimname = tagdir +"/"+ tagfiles.format(id=id)
+    
+    if (not os.path.isfile(absimname)):
+        print("Error: Input tag image file {} not found".format(absimname))
+    %>
+    
+    <!-- Tag ${id} -->
+    
+    <g class="tagcell" transform="translate(${x},${y})">
+      %if show_tag_cell:
+      <rect x="0" y="0" width="${step_x}" height="${step_y}" fill="none" stroke="yellow" 
+            stroke-width="0.05"/>
+      %endif
+    
+      <g id="tag${id}" 
+         transform="translate(${dx},${dy}) scale(${pix2mm},${pix2mm}) translate(${pix_left},${pix_top})">
+
+        %if show_tag:
+        <use xlink:href="#bg_${blockid}"/>
+        <text class="tagvalue" x="${cx}" y="-${tagmargin1_pix}" text-anchor="middle" 
+              font-family="${fontfamily}" font-weight="bolder" font-size="${fontsize_id}" 
+              fill="${textcolor}">${id}</text>
+    
+        %if show_tag_img:
+        <use transform="scale(${imgsc},${imgsc})" xlink:href="${imname}#top"></use>
+        %endif
+
+        %endif
+
+        %if show_tag_cutkerf:
+        <use xlink:href="#cutkerf_${blockid}"/>
+        %endif
+        %if show_tag_cut:
+        <use xlink:href="#cut_${blockid}"/>
+        %endif
+      </g> <!-- Tag -->
+    
+    </g>  <!-- Tag cell -->
+                       
+  % endfor
+% endfor
