@@ -322,8 +322,10 @@ class Generator(object):
       svgtext += render_page(tagdpp1200=dpp4mm(8,1.4), **taginv, **pos(1,4))
       svgtext += render_page(tagdpp1200=dpp4mm(8,1.4), **tag,    **pos(1,5))
     elif (False):
-      taginv = dict(family="tag25h6inv", tagdir='tag25h6inv/svg', tagfiles='tag25_06_{id:05d}.svg', style=2)
-      tag = dict(family="tag25h6", tagdir='tag25h6/svg', tagfiles='tag25_06_{id:05d}.svg', style=1)
+      tag = dict(family="tag25h6", tagdir='tag25h6/svg', 
+                 tagfiles='tag25_06_{id:05d}.svg', tagcode_pix = 5, style=1)
+      taginv = dict(family="tag25h6inv", tagdir='tag25h6inv/svg',
+                    tagfiles='tag25_06_{id:05d}.svg', tagcode_pix = 5, style=2)
 
       svgtext += render_page(tagdpp1200=10, **taginv, **pos(0,0))
       svgtext += render_page(tagdpp1200=10, **tag,    **pos(0,1))
@@ -338,8 +340,10 @@ class Generator(object):
       svgtext += render_page(tagdpp1200=dpp4mm(8,1.4), **taginv, **pos(1,4))
       svgtext += render_page(tagdpp1200=dpp4mm(8,1.4), **tag,    **pos(1,5))
     else:
-      taginv = dict(family="tag25h5inv", tagdir='tag25h5inv/svg', tagfiles='tag25_05_{id:05d}.svg', style=2)
-      tag = dict(family="tag25h5", tagdir='tag25h5/svg', tagfiles='tag25_05_{id:05d}.svg', style=1)
+      tag = dict(family="tag25h5", tagdir='tag25h5/svg',     
+                 tagfiles='tag25_05_{id:05d}.svg', tagcode_pix = 5, style=1)
+      taginv = dict(family="tag25h5inv", tagdir='tag25h5inv/svg',     
+                    tagfiles='tag25_05_{id:05d}.svg', tagcode_pix = 5, style=2)
 
       svgtext += render_page(tagdpp1200=10, **taginv, **pos(0,0))
       svgtext += render_page(tagdpp1200=10, **tag,    **pos(0,1))
