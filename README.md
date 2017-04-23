@@ -44,19 +44,20 @@ Tools to generate sheets of tags for insect tracking
 ```
   cd tags
 ```
-  # make sure SVG files are available as `svg/keyed????.svg`
+  make sure SVG files are available as `svg/keyed????.svg`
 
   e.g.:
 ```
   python ../python/generatetagsheet.py --dpp 10 -o tag25h5_sheet.svg -bx=1 -by=1 -td tag25h5/svg -tf tag25_05_{id:05d}.svg
 ```
-
+  this creates the sheet as SVG using mako template engine
+  then convert it to PDF using svg2pdf_inkscape.sh
+  
   for help:
 ```
   python ../python/generatetagsheet.py -h
 ```
-  # this creates the sheet as SVG using mako template engine
-  # then convert it to PDF using svg2pdf_inkscape.sh
+  
 
       Tag structure and parameters:
         +-----------------+
