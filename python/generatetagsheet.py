@@ -39,12 +39,13 @@ class Layout(object):
     self.axismargin_left = 0.75*self.in2mm
     
     self.tagsmargin_top =  1.00*self.in2mm  # First block top-left
-    self.tagsmargin_left = 0.85*self.in2mm
+    self.tagsmargin_left = 0.75*self.in2mm
+    self.blockmargin     = 0.20*self.in2mm  # Margin between blocks
     
     self.title_fontsize=2.3 # 3 normally
     self.block_fontsize=1.4 # 2 normally
     
-    self.custom = False
+    self.custom = None
         
     # Notes:
     # Best printer:
@@ -80,10 +81,11 @@ class Layout(object):
     self.first_id = 0
     self.maxid = 2319 # for 36h10
     
-    self.tagdir = 'tag36h10inv/svg'
+    #self.tagdir = 'tag36h10inv/svg'
+    self.tagdir = '{family}/svg'
     self.tagfiles = 'keyed{id:04d}.svg'
     
-    self.output = 'output_tagsheet.svg'
+    self.output = 'tagsheet_out.svg'
     
     self.modestring = ""
 
@@ -95,19 +97,17 @@ class Layout(object):
     self.arrowcolor="black"
     self.crosscolor="black"
 
-    #self.bgcolor="white"
-    #self.textcolor="white"
-    #self.sectorcolor="white"
-    #self.outerCircleColor="#888"
     self.fontsize_id=2
     self.fontfamily="Courier New"
     
-    self.show_opening = True
-    self.show_tagpage = True
-    self.show_footer = True
-    self.show_closing = True
+    #self.show_opening = True
+    #self.show_tagpage = True
+    #self.show_closing = True
     
     self.show_page_title = True
+    self.show_test_patterns = True
+    self.show_footer = True
+    
     self.show_block_rect = False
     self.show_block_title = True
     self.show_tag_cell = False
@@ -115,7 +115,6 @@ class Layout(object):
     self.show_tag_img = True
     self.show_tag_cut = False
     self.show_tag_cutkerf = False
-    self.show_test_patterns = True
     
     self.recompute_lengths()
   
@@ -176,16 +175,21 @@ class Layout(object):
     self.margin = self.apply_hint_mm(self.margin*self.pix2mm)/self.pix2mm
     self.step_x=self.apply_hint_mm((self.tagwidth2_pix+self.margin)*self.pix2mm)
     self.step_y=self.apply_hint_mm((self.tagheight2_pix+self.margin)*self.pix2mm)
+    
     self.blockwidth_x=self.step_x*self.ntagsx
     self.blockwidth_y=self.step_y*self.ntagsy
-    self.blockstep_x=self.apply_hint_mm(self.step_x*self.ntagsx + 5)
-    self.blockstep_y=self.apply_hint_mm(self.step_y*self.ntagsy + 5)
+    self.blockstep_x=self.apply_hint_mm(self.step_x*self.ntagsx + self.blockmargin)
+    self.blockstep_y=self.apply_hint_mm(self.step_y*self.ntagsy + self.blockmargin)
     
     # Compute the relative path from output sheet to svg images so the links 
     # in the SVG will keep working wherever we create the sheet, 
     # and if we move around the sheet with the input tags
     # This does not allow to move the sheet around without the input tags
-    self.reltagdir = os.path.relpath(self.tagdir, os.path.dirname(self.output))
+    # For this to work, first substitute the family name to obtain 
+    # fully formatted strings before applying relpath
+    self.abstagdir = self.tagdir.format(family=self.family)
+    self.reltagdir = os.path.relpath(self.abstagdir, os.path.dirname(self.output))
+    
   
 from beaker.cache import CacheManager
 
@@ -213,10 +217,12 @@ class Generator(object):
     self.layout.recompute_lengths()
     return vars(self.layout)
     
-  def render(self, name):
+  def render(self, name, **kargs):
     if (self.verbose>0):
       print("Rendering template '{}'...".format(name))
-      
+    
+    for field in kargs:
+        setattr(self.layout, field, kargs[field])
     V = self.getvars()
       
     if (self.verbose>=3):
@@ -225,7 +231,6 @@ class Generator(object):
           
     template = self.lookup.get_template(uri=name)
     
-    outstring = '<!-- ERROR in name -->'
     try:
         outstring =  template.render(**V)
     except:
@@ -238,45 +243,31 @@ class Generator(object):
             print(line, "\n")
             print('------------------------')
         print("%s: %s" % (str(traceback.error.__class__.__name__), traceback.error))
+        outstring = '<!-- ERROR in name -->'
         
     return outstring
     
   def generatesvg(self,output=None):
+    # Generate standard tag sheet (1 type of tag, 1 size)
     if (output is None):
         output=self.layout.output
 
     if (self.verbose>0):
       print("Creating SVG tag sheet '{}'...".format(output))
-    V = self.getvars()
-    if (self.verbose>=2):
-      for field in OrderedDict(sorted(V.items())):
-          print("  {}={}".format(field,V[field]))
 
     svgtext = self.render('template_tagsheet.svg')
     with open(output, 'w') as out:
        out.write(svgtext)
         
   def customsvg(self,output=None):
+    # Generate custom tag sheet with multiple types of tags/sizes
     if (output is None):
         output=self.layout.output
 
     if (self.verbose>0):
       print("Creating custom SVG tag sheet '{}'...".format(output))
-    V = self.getvars()
-    if (self.verbose>=2):
-      for field in OrderedDict(sorted(V.items())):
-          print("  {}={}".format(field,V[field]))
     
-    self.layout.show_opening=True
-    self.layout.show_tagpage=False
-    self.layout.show_footer=False
-    self.layout.show_closing=False
-    svgtext = self.render('template_tagsheet.svg')
-
-    self.layout.show_opening=False
-    self.layout.show_tagpage=True
-    self.layout.show_footer=False
-    self.layout.show_closing=False
+    svgtext = self.render('template_opening.svg')
     
     self.layout.nblocksx = 2
     self.layout.nblocksy = 1
@@ -291,78 +282,67 @@ class Generator(object):
     y0 = self.layout.in2mm
     shift_x = self.layout.blockstep_x*self.layout.nblocksx+10
     shift_y = self.layout.blockstep_y*self.layout.nblocksy+10
-
-    def render_page(**kargs):
-        for field in kargs:
-            setattr(self.layout, field, kargs[field])
-        svgtext = self.render('template_tagsheet.svg')
-        return svgtext
         
     def pos(i,j):
         return {'tagsmargin_left': x0+i*shift_x, 'tagsmargin_top': y0+j*shift_y}
         
     def dpp4mm(tagsize_pix,tagsize_mm):
-        # self.tagsize = self.tagsize_pix * self.tagdpp1200 / 1200 * self.in2mm
         return tagsize_mm / tagsize_pix * 1200 / 25.4
-
-    if (False):
-      taginv = dict(family="tag36h10inv", tagdir='tag36h10inv/svg', style=2)
-      tag = dict(family="tag36h10", tagdir='tag36h10/svg', style=1)
-
-      svgtext += render_page(tagdpp1200=10, **taginv, **pos(0,0))
-      svgtext += render_page(tagdpp1200=10, **tag,    **pos(0,1))
-      svgtext += render_page(tagdpp1200=9, **taginv, **pos(0,2))
-      svgtext += render_page(tagdpp1200=9, **tag,    **pos(0,3))
-      svgtext += render_page(tagdpp1200=8, **taginv, **pos(0,4))
-      svgtext += render_page(tagdpp1200=8, **tag,    **pos(0,5))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.6), **taginv, **pos(1,0))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.6), **tag,    **pos(1,1))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.5), **taginv, **pos(1,2))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.5), **tag,    **pos(1,3))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.4), **taginv, **pos(1,4))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.4), **tag,    **pos(1,5))
-    elif (False):
-      tag = dict(family="tag25h6", tagdir='tag25h6/svg', 
-                 tagfiles='tag25_06_{id:05d}.svg', tagcode_pix = 5, style=1)
-      taginv = dict(family="tag25h6inv", tagdir='tag25h6inv/svg',
-                    tagfiles='tag25_06_{id:05d}.svg', tagcode_pix = 5, style=2)
-
-      svgtext += render_page(tagdpp1200=10, **taginv, **pos(0,0))
-      svgtext += render_page(tagdpp1200=10, **tag,    **pos(0,1))
-      svgtext += render_page(tagdpp1200=9, **taginv, **pos(0,2))
-      svgtext += render_page(tagdpp1200=9, **tag,    **pos(0,3))
-      svgtext += render_page(tagdpp1200=8, **taginv, **pos(0,4))
-      svgtext += render_page(tagdpp1200=8, **tag,    **pos(0,5))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.6), **taginv, **pos(1,0))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.6), **tag,    **pos(1,1))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.5), **taginv, **pos(1,2))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.5), **tag,    **pos(1,3))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.4), **taginv, **pos(1,4))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.4), **tag,    **pos(1,5))
-    else:
-      tag = dict(family="tag25h5", tagdir='tag25h5/svg',     
-                 tagfiles='tag25_05_{id:05d}.svg', tagcode_pix = 5, style=1)
-      taginv = dict(family="tag25h5inv", tagdir='tag25h5inv/svg',     
-                    tagfiles='tag25_05_{id:05d}.svg', tagcode_pix = 5, style=2)
-
-      svgtext += render_page(tagdpp1200=10, **taginv, **pos(0,0))
-      svgtext += render_page(tagdpp1200=10, **tag,    **pos(0,1))
-      svgtext += render_page(tagdpp1200=9, **taginv, **pos(0,2))
-      svgtext += render_page(tagdpp1200=9, **tag,    **pos(0,3))
-      svgtext += render_page(tagdpp1200=8, **taginv, **pos(0,4))
-      svgtext += render_page(tagdpp1200=8, **tag,    **pos(0,5))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.6), **taginv, **pos(1,0))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.6), **tag,    **pos(1,1))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.5), **taginv, **pos(1,2))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.5), **tag,    **pos(1,3))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.4), **taginv, **pos(1,4))
-      svgtext += render_page(tagdpp1200=dpp4mm(8,1.4), **tag,    **pos(1,5))
         
-    self.layout.show_opening=False
-    self.layout.show_tagpage=False
+    def render_page(**kargs):
+        print("Rendering page family={family}, tagdpp1200={tagdpp1200}".format(**kargs))
+        svgtext = self.render('template_page.svg', **kargs)
+        return svgtext
+
+    if (self.layout.custom=='custom_tag36h10'):
+      tag = dict(family="tag36h10", tagdir='tag36h10/svg', 
+                 tagcode_pix = 6, style=1)
+      taginv = dict(family="tag36h10inv", tagdir='tag36h10inv/svg', 
+                    tagcode_pix = 6, style=2)
+
+      svgtext += render_page(tagdpp1200=11, **taginv, **pos(0,0))
+      svgtext += render_page(tagdpp1200=11, **tag,    **pos(1,0))
+      svgtext += render_page(tagdpp1200=10, **taginv, **pos(0,1))
+      svgtext += render_page(tagdpp1200=10, **tag,    **pos(1,1))
+      svgtext += render_page(tagdpp1200=9,  **taginv, **pos(0,2))
+      svgtext += render_page(tagdpp1200=9,  **tag,    **pos(1,2))
+    elif (self.layout.custom=='custom_tag25h6'):
+      tag = dict(family="tag25h6", tagdir='tag25h6/svg', 
+                 tagcode_pix = 5, style=1)
+      taginv = dict(family="tag25h6inv", tagdir='tag25h6inv/svg',
+                    tagcode_pix = 5, style=2)
+
+      svgtext += render_page(tagdpp1200=11, **taginv, **pos(0,0))
+      svgtext += render_page(tagdpp1200=11, **tag,    **pos(1,0))
+      svgtext += render_page(tagdpp1200=10, **taginv, **pos(0,1))
+      svgtext += render_page(tagdpp1200=10, **tag,    **pos(1,1))
+      svgtext += render_page(tagdpp1200=9,  **taginv, **pos(0,2))
+      svgtext += render_page(tagdpp1200=9,  **tag,    **pos(1,2))
+    elif (self.layout.custom=='custom_tag25h5'):
+      tag = dict(family="tag25h5", tagdir='tag25h5/svg',
+                 tagcode_pix = 5, style=1)
+      taginv = dict(family="tag25h5inv", tagdir='tag25h5inv/svg',     
+                    tagcode_pix = 5, style=2)
+
+      svgtext += render_page(tagdpp1200=11, **taginv, **pos(0,0))
+      svgtext += render_page(tagdpp1200=11, **tag,    **pos(1,0))
+      svgtext += render_page(tagdpp1200=10, **taginv, **pos(0,1))
+      svgtext += render_page(tagdpp1200=10, **tag,    **pos(1,1))
+      svgtext += render_page(tagdpp1200=9,  **taginv, **pos(0,2))
+      svgtext += render_page(tagdpp1200=9,  **tag,    **pos(1,2))
+    elif (self.layout.custom=='custom_test'):
+      tag = dict(family="tag25h5", tagdir='tag25h5/svg',
+                 tagcode_pix = 5, style=1)
+      taginv = dict(family="tag25h5inv", tagdir='tag25h5inv/svg',     
+                    tagcode_pix = 5, style=2)
+
+      svgtext += render_page(tagdpp1200=11, **taginv, **pos(0,0))
+    else:
+      print('ERROR: unknown custom layout, custom={}'.format(self.layout.custom))
+      return
+        
     self.layout.show_footer=True
-    self.layout.show_closing=True
-    svgtext += self.render('template_tagsheet.svg')
+    svgtext += self.render('template_closing.svg')
     
     with open(output, 'w') as out:
        out.write(svgtext)
@@ -456,12 +436,13 @@ if __name__ == "__main__":
     parser.add_argument('-r', '--rasterize',  
                         dest='rasterize', action='store_true',
                         help='rasterize output PDF')
-    parser.add_argument('--custom',  
-                        dest='custom', action='store_true',
-                        help='Use custom layout (hardcoded for now)')
+    parser.add_argument('-c', '--custom',  metavar='<layout name>',
+                        dest='custom', default=layout.custom,
+                        choices='custom_tag25h5,custom_tag25h6,custom_tag36h10,,custom_test'.split(','),
+                        help='Use custom layout (hardcoded %(choices)s)')
     args = parser.parse_args()    
     
-    fields='tagdpp1200,output,style,tagdir,tagfiles,family,first_id,maxid,nblocksx,nblocksy,ntagsx,ntagsy,custom'.split(',')
+    fields='tagdpp1200,output,style,tagdir,tagfiles,family,first_id,maxid,nblocksx,nblocksy,ntagsx,ntagsy,rasterize,custom'.split(',')
     for field in fields:
         #print("  Configuring '{}'".format(field))
         #print("  Configuring {}={}".format(field,getattr(args,field)))

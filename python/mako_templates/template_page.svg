@@ -1,4 +1,4 @@
-
+﻿
 <%!
   in2mm = 25.4
   def apply_hint_mm(val_mm, dpi=300):

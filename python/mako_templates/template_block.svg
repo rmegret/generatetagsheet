@@ -1,4 +1,4 @@
-
+﻿
 <%page args="block_first_id, blockmargin_left, blockmargin_top"/>
 
 <%! 
@@ -174,8 +174,8 @@
     x = apply_hint_mm(x)
     y = apply_hint_mm(y)
 
-    imname = reltagdir +"/"+ tagfiles.format(id=id)
-    absimname = tagdir +"/"+ tagfiles.format(id=id)
+    imname = reltagdir +"/"+ tagfiles.format(family=family,id=id)
+    absimname = abstagdir +"/"+ tagfiles.format(family=family,id=id)
     
     if (not os.path.isfile(absimname)):
         print("Error: Input tag image file {} not found".format(absimname))
