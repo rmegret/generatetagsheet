@@ -300,12 +300,12 @@ class Generator(object):
       taginv = dict(family="tag36h10inv", tagdir='tag36h10inv/svg', 
                     tagcode_pix = 6, style=2)
 
-      svgtext += render_page(tagdpp1200=11, **taginv, **pos(0,0))
-      svgtext += render_page(tagdpp1200=11, **tag,    **pos(1,0))
-      svgtext += render_page(tagdpp1200=10, **taginv, **pos(0,1))
-      svgtext += render_page(tagdpp1200=10, **tag,    **pos(1,1))
-      svgtext += render_page(tagdpp1200=9,  **taginv, **pos(0,2))
-      svgtext += render_page(tagdpp1200=9,  **tag,    **pos(1,2))
+      svgtext += render_page(tagdpp1200=10, **taginv, **pos(0,0))
+      svgtext += render_page(tagdpp1200=10, **tag,    **pos(1,0))
+      svgtext += render_page(tagdpp1200=9, **taginv, **pos(0,1))
+      svgtext += render_page(tagdpp1200=9, **tag,    **pos(1,1))
+      svgtext += render_page(tagdpp1200=8,  **taginv, **pos(0,2))
+      svgtext += render_page(tagdpp1200=8,  **tag,    **pos(1,2))
     elif (self.layout.custom=='custom_tag25h6'):
       tag = dict(family="tag25h6", tagdir='tag25h6/svg', 
                  tagcode_pix = 5, style=1)
