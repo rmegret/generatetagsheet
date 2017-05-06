@@ -11,19 +11,20 @@
 <!-- Page Title -->
 
 <%
-  tit_left=tagsmargin_left+12
-  tit_center=tagsmargin_left+((nblocksx-1)*blockstep_x+blockwidth_x)/2
-  tit_top=tagsmargin_top-5
+  tit_left=page_left+12
+  tit_center=page_left+pagesize_x/2
+  tit_top=page_top-5
 %>
 
 % if show_page_title:
-    # Main title
+    ## Main title
     
     <%
           tit="{family}  {tagsize:.3f}mm ({tagdpp1200:.2f}dpp@1200dpi)  {modestring}".format(family=family, tagsize=tagsize, first_id=first_id, last_id=last_id, modestring=modestring, tagdpp1200=tagdpp1200)
           
           if (show_tag_cut or show_tag_cutkerf):
               tit+=" kerf={:.3f}mm={:.2f}pix".format(laserkerf_mm,laserkerf_pix)
+              tit+=" of={}".format(cut_opening_factor)
     %>
     
     <g id="title" transform="translate(${tit_center},${tit_top})">
@@ -33,6 +34,18 @@
     </g>
 % endif
 
+%if show_page_rect:
+    <g class="page_rect">
+    <rect x="${page_left}" y="${page_top}" width="${pagesize_x}" height="${pagesize_y}" fill="none" stroke="magenta" stroke-width="0.1"/>
+    </g>
+    <g class="page_rect_blocktitle">
+    <rect x="${page_left}" y="${page_top-blockmargin}" width="${pagesize_x}" height="${blockmargin}" fill="none" stroke="pink" stroke-width="0.02"/>
+    </g>
+    <g class="page_rect_pagetitle">
+    <rect x="${page_left}" y="${page_top-pagemargin}" width="${pagesize_x}" height="${pagemargin}" fill="none" stroke="skyblue" stroke-width="0.02"/>
+    </g>
+%endif
+
 
 <!-- Blocks of tags -->
 
@@ -40,25 +53,46 @@
   %for iix in range(nblocksx):
 <%
   block_first_id = first_id + (iix + iiy*nblocksx)*ntagsx*ntagsy
-  blockmargin_left = tagsmargin_left + iix * blockstep_x
-  blockmargin_top = tagsmargin_top + iiy * blockstep_y
+  blockmargin_left = page_left + iix * blockstep_x
+  blockmargin_top = page_top + iiy * blockstep_y
     
   blockmargin_left = apply_hint_mm(blockmargin_left)
   blockmargin_top = apply_hint_mm(blockmargin_top)
   
-  block_cross_x = blockmargin_left - (blockstep_x-blockwidth_x)/2
-  block_cross_y = blockmargin_top - (blockstep_y-blockwidth_y)/2
+  block_cross_x = blockmargin_left - (blockstep_x-blocksize_x)/2
+  block_cross_y = blockmargin_top - (blockstep_y-blocksize_y)/2
+  
+  kmin = block_first_id
+  kmax = block_first_id + ntagsx*ntagsy-1
+  
+  block_is_visible = (kmax>=first_id) and (kmin<=maxid)
+
 %>
 
 <%include file="template_block.svg" args="block_first_id=block_first_id, blockmargin_left=blockmargin_left, blockmargin_top=blockmargin_top"/>
 
-%if (iix>0) and (iiy>0):
-  <g transform="translate(${block_cross_x},${block_cross_y})">
+<%def name="putCross(crossx,crossy)">
+  <g transform="translate(${crossx},${crossy})">
+    %if show_crosses:
     <path d="M -1.5 0 L 1.5 0 M 0 -1.5 L 0 1.5" fill="none" stroke="${crosscolor}" stroke-width="0.04"/>
+    %endif
     %if show_tag_cut:
     <path d="M -1 0 L 1 0 M 0 -1 L 0 1" fill="none" stroke="#0F0" stroke-width="0.03"/>
     %endif
   </g>
+</%def>
+
+%if (iix==0 and iiy==0):
+    ${putCross(block_cross_x, block_cross_y)}
+%endif
+%if (iix==0):
+    ${putCross(block_cross_x, block_cross_y+blockstep_y)}
+%endif
+%if (iiy==0):
+    ${putCross(block_cross_x+blockstep_x, block_cross_y)}
+%endif
+%if block_is_visible:
+  ${putCross(block_cross_x+blockstep_x, block_cross_y+blockstep_y)}
 %endif
 
   %endfor

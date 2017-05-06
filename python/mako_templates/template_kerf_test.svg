@@ -1,5 +1,5 @@
-﻿
-<%page args="block_first_id, blockmargin_left, blockmargin_top, show_block_title=True"/>
+
+<%page args="blockmargin_left, blockmargin_top"/>
 
 <%! 
     import math 
@@ -11,34 +11,21 @@
       return round(val_in*dpi)/dpi*in2mm
 
     halfinch=25.4/2
+    
+    blockid = "testkerf"
 %>
 
-<%
-    kmin = block_first_id
-    kmax = block_first_id + ntagsx*ntagsy-1
-    
-    blockid = "{}_{}_{}".format(kmin,family,tagsize)
-    
-    block_is_visible = (kmax>=first_id) and (kmin<=maxid)
-%>
 
-<!-- Block of tags ${kmin}..${kmax} -->
+<!-- Block of tags for testing kerf -->
 
-%if not block_is_visible:
-<!-- Block is not visible -->
-%else: #block_is_visible==true
 ## #### BLOCK TITLE ####
 
 %if show_block_title:
     <%
-    lefttit=family;
-    midtit="{tagsize:.3f}mm ({tagdpp1200:.1f}dpp)".format(tagsize=tagsize,tagdpp1200=tagdpp1200)
-    righttit="{kmin}..{kmax}".format(family=family, kmin=kmin, kmax=kmax)
+    lefttit="Test kerf";
 
     tit_left=blockmargin_left
     tit_top=blockmargin_top
-    tit_center=blockmargin_left+blocksize_x/2
-    tit_right=blockmargin_left+blocksize_x
     %>
     <!-- Block title -->
     <g class="block_title" transform="translate(${tit_left},${tit_top})">
@@ -46,27 +33,14 @@
                   font-family="Helvetica" font-weight="bold" font-size="${block_fontsize}"
                   fill="#000000">${lefttit}</text>
     </g>
-    <g class="block_title" transform="translate(${tit_center},${tit_top})">
-    <text text-anchor="middle" dy="-1.5"
-                  font-family="Helvetica" font-weight="bold" font-size="${block_fontsize}"
-                  fill="#000000">${midtit}</text>
-    </g>
-    <g class="block_title" transform="translate(${tit_right},${tit_top})">
-    <text text-anchor="end" dy="-1.5"
-                  font-family="Helvetica" font-weight="bold" font-size="${block_fontsize}"
-                  fill="#000000">${righttit}</text>
-    </g>
-%endif
-%if show_block_rect:
-    <g class="block_rect" transform="translate(${blockmargin_left},${blockmargin_top})">
-    <rect x="0" y="0" width="${blocksize_x}" height="${blocksize_y}" fill="none" stroke="red" stroke-width="0.1"/>
-    </g>
 %endif
 
 ## #### DEFINITIONS ####
 
 <!-- Definitions -->
 <%
+    print("In kerf_test.svg...")
+
     cx=tagsize_pix/2
     cy=tagsize_pix/2
 
@@ -90,17 +64,9 @@
     # Shift of tag top-left within cell
     dx=(step_x-tagwidth2_mm)/2
     dy=(step_y-tagheight2_mm)/2
-    
-    cut_left=-tagmargin1_pix-cutmargin_pix
-    cut_top=-tagmargin1_pix-cutmargin_pix-idheight_pix
-    cut_width=tagsize1_pix+2*cutmargin_pix
-    cut_height=tagsize1_pix+2*cutmargin_pix+idheight_pix
-    cut_radius=tagmargin1_pix+cutmargin_pix
-    
     dx = apply_hint_mm(dx)
     dy = apply_hint_mm(dy)
     
-    tagsize2_pix = tagsize_pix + tagmargin2_pix*2
 %>
 <defs>
   <g id="arrow_${blockid}">
@@ -166,6 +132,63 @@
       </g>
   </g>
   
+  <g id='cross_${blockid}'>
+    %if show_crosses:
+    <path d="M -1.5 0 L 1.5 0 M 0 -1.5 L 0 1.5" fill="none" stroke="${crosscolor}" stroke-width="0.04"/>
+    %endif
+    %if show_tag_cut:
+    <path d="M -1 0 L 1 0 M 0 -1 L 0 1" fill="none" stroke="#0F0" stroke-width="0.03"/>
+    %endif
+  </g>
+  
+</defs>
+
+<%
+    # Note: at 10dpp, 200um=1pix wide
+    #kerf_list = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+    kerf_list = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]
+    opening_factor_list = [0, 1.5, 2, 2.5, 3]
+  
+    ntagsx = len(kerf_list)
+    ntagsy = len(opening_factor_list)
+    
+    blocksize_x = ntagsx*step_x
+    blocksize_y = ntagsy*step_y
+%>
+
+## #### TAG GRID ####
+
+<%
+  cross_margin = 25.4/4
+
+  block_cross_x = blockmargin_left - blockmargin/2
+  block_cross_y = blockmargin_top - blockmargin/2
+%>
+  <g transform="translate(${block_cross_x},${block_cross_y})">
+    <use xlink:href="#cross_${blockid}"/>
+  </g>
+<%
+  block_cross_x = blockmargin_left + blocksize_x + blockmargin/2
+  block_cross_y = blockmargin_top - blockmargin/2
+%>
+  <g transform="translate(${block_cross_x},${block_cross_y})">
+    <use xlink:href="#cross_${blockid}"/>
+  </g>
+<%
+  block_cross_x = blockmargin_left + blocksize_x + blockmargin/2
+  block_cross_y = blockmargin_top + blocksize_y + blockmargin/2
+%>
+  <g transform="translate(${block_cross_x},${block_cross_y})">
+    <use xlink:href="#cross_${blockid}"/>
+  </g>
+<%
+  block_cross_x = blockmargin_left - blockmargin/2
+  block_cross_y = blockmargin_top + blocksize_y + blockmargin/2
+%>
+  <g transform="translate(${block_cross_x},${block_cross_y})">
+    <use xlink:href="#cross_${blockid}"/>
+  </g>
+  
 <%def name="cut(id, cut_left, cut_top, cut_width, cut_height, r, opening=0)">
   %if (opening==0):
     <g id="${id}">
@@ -223,18 +246,27 @@
   %endif
 </%def>
   
-</defs>
-
-## #### TAG GRID ####
 
 %for iy in range(0,ntagsy):
   %for ix in range(0,ntagsx):
     
     <%
-    id=ix+ntagsx*iy+block_first_id
+    id=ix+ntagsx*iy
     
-    if (id>maxid):
-        continue
+    laserkerf_mm = kerf_list[ix]
+    laserkerf_pix=laserkerf_mm/pix2mm
+    cutmargin_pix = laserkerf_pix/2
+    
+    cut_opening_factor = opening_factor_list[iy]
+    
+    cut_left=-tagmargin1_pix-cutmargin_pix
+    cut_top=-tagmargin1_pix-cutmargin_pix-idheight_pix
+    cut_width=tagsize1_pix+2*cutmargin_pix
+    cut_height=tagsize1_pix+2*cutmargin_pix+idheight_pix
+    cut_radius=tagmargin1_pix+cutmargin_pix
+    cut_opening_pix=cut_opening_factor*laserkerf_pix
+    if (cut_opening_pix>cut_width-2*cut_radius):  # Avoid opening larger than reasonable
+         cut_opening_pix=cut_width-2*cut_radius
   
     # Cell origin
     x=blockmargin_left+ix*step_x
@@ -243,8 +275,8 @@
     x = apply_hint_mm(x)
     y = apply_hint_mm(y)
 
-    imname = reltagdir +"/"+ tagfiles.format(family=family,id=id)
-    absimname = abstagdir +"/"+ tagfiles.format(family=family,id=id)
+    imname = reltagdir +"/"+ tagfiles.format(family=family,id=first_id)
+    absimname = abstagdir +"/"+ tagfiles.format(family=family,id=first_id)
     
     if (not os.path.isfile(absimname)):
         print("Error: Input tag image file {} not found".format(absimname))
@@ -263,27 +295,26 @@
 
         %if show_tag:
         <use xlink:href="#bg_${blockid}"/>
-        <text class="tagvalue" x="${cx}" y="${-tagmargin1_pix-0.1}" text-anchor="middle" 
-              font-family="${fontfamily}" font-weight="900" font-size="${fontsize_id}" 
-              fill="${textcolor}">${id}</text>
-              
-        <text class="tagvalueext" x="${cx}" y="-${tagmargin2_pix+3}" text-anchor="middle" 
-              font-family="${fontfamily}" font-weight="bolder" font-size="${fontsize_idext}" 
-              fill="black">${id}</text>
-              
+        <text class="tagvalue" x="${cx}" y="-${tagmargin1_pix}" text-anchor="middle" 
+              font-family="${fontfamily}" font-weight="bolder" font-size="${fontsize_id}" 
+              fill="${textcolor}">${laserkerf_mm}</text>
+
+        <text class="tagvalue" x="${cx}" y="-${tagmargin1_pix+tagmargin/2}" text-anchor="middle" 
+              font-family="${fontfamily}" font-weight="bolder" font-size="${fontsize_id*2}" 
+              fill="black">${laserkerf_mm},${cut_opening_factor}</text>
+    
         %if show_tag_img:
         <use transform="scale(${imgsc},${imgsc})" xlink:href="${imname}#top"></use>
         %endif
 
         %endif
 
-
-    %if show_tag_cutkerf:
+        %if show_tag_cutkerf:
         ${cutkerf("cut_kerf"+blockid, cut_left, cut_top, cut_width, cut_height, cut_radius, cut_opening_pix)}
-    %endif
-    %if show_tag_cut:
-        ${cut("cut_"+blockid, cut_left, cut_top, cut_width, cut_height, cut_radius, cut_opening_pix)}
-    %endif
+        %endif
+        %if show_tag_cut:
+          ${cut("cut_"+blockid, cut_left, cut_top, cut_width, cut_height, cut_radius, cut_opening_pix)}
+        %endif
       </g> <!-- Tag -->
     
     </g>  <!-- Tag cell -->
@@ -291,4 +322,3 @@
   % endfor
 % endfor
 
-%endif #if not block_is_visible:

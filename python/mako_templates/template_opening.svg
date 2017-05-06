@@ -12,6 +12,7 @@
     val_in = val_mm / in2mm
     return round(val_in*dpi)/dpi*in2mm
 
+  inch=25.4
   halfinch=25.4/2
 %>
 
@@ -43,6 +44,11 @@
         <text text-anchor="end" dominant-baseline="middle" x="-0.5" y="-3"
                   font-family="Helvetica" font-size="1.0"
                   fill="#000000" xml:space="preserve">0.01in</text>
+    </g>
+  </g>
+  <g id="crossbasic">
+    <g class="cross">
+        <path d="M -2 0 L 2 0 M 0 -2 L 0 2" fill="none" stroke="black" stroke-width="0.02"/>
     </g>
   </g>
   <g id="crosscut">
@@ -87,7 +93,10 @@
     <use xlink:href="#checkers" transform="scale(${s},${s}) translate(2.5,0.5)"/>
   </g>
   <g transform="translate(0,${halfinch*6})">
-     <%include file="template_siemensstar.svg"/>
+     <%include file="template_siemensstar.svg" args="ppi=150"/>
+  </g>
+  <g transform="translate(0,${halfinch*8})">
+     <%include file="template_siemensstar.svg" args="ppi=75"/>
   </g>
   </g> <!-- Test pattern -->
 </defs>
@@ -104,10 +113,21 @@
 %>
 
 <g id="alignmentCrosses">
+%if show_crosses:
   <use xlink:href="#cross" transform="translate(${x0},${y0})"/>
   <use xlink:href="#cross" transform="translate(${x1},${y0}) scale(-1,1)"/>
   <use xlink:href="#cross" transform="translate(${x1},${y1}) scale(-1,-1)"/>
   <use xlink:href="#cross" transform="translate(${x0},${y1}) scale(1,-1)"/>
+  
+  <use xlink:href="#crossbasic" transform="translate(${0.25*inch},${y0})"/>
+  <use xlink:href="#crossbasic" transform="translate(${0.50*inch},${y0})"/>
+  <use xlink:href="#crossbasic" transform="translate(${x0},${0.25*inch})"/>
+  <use xlink:href="#crossbasic" transform="translate(${x0},${0.50*inch})"/>
+  <use xlink:href="#crossbasic" transform="translate(${page_w-0.25*inch},${y1})"/>
+  <use xlink:href="#crossbasic" transform="translate(${page_w-0.50*inch},${y1})"/>
+  <use xlink:href="#crossbasic" transform="translate(${x1},${page_h-0.25*inch})"/>
+  <use xlink:href="#crossbasic" transform="translate(${x1},${page_h-0.50*inch})"/>
+%endif
   
 %if show_tag_cut:
   <use xlink:href="#crosscut" transform="translate(${x0},${y0})"/>
@@ -118,17 +138,25 @@
 </g>
 
 %if show_test_patterns:
-<g id="testPatterns">
-<%
-  testpattern_cx = apply_hint_mm(page_w-halfinch*1.25,50)
-  testpattern_y0 = halfinch*8
-%>
-  <use xlink:href="#testpattern" transform="translate(${testpattern_cx},${testpattern_y0})"/>
-  
-<%
+<g class="testPatterns">
+  <%
   testpattern_cx = halfinch
   testpattern_y0 = halfinch*6
-%>
+  %>
   <use xlink:href="#testpattern" transform="translate(${testpattern_cx},${testpattern_y0})"/>
+</g>
+<!-- 
+<g class="testPatterns">  
+  <%
+  testpattern_cx = apply_hint_mm(page_w-halfinch,50)
+  testpattern_y0 = halfinch*4
+  %>
+  <use xlink:href="#testpattern" transform="translate(${testpattern_cx},${testpattern_y0})"/>
+</g>
+ -->
+%endif
+%if show_kerftest:
+<g class="testPatterns">  
+  <%include file="template_kerf_test.svg" args="blockmargin_left=kerftest_left, blockmargin_top=kerftest_top"/>
 </g>
 %endif

@@ -68,7 +68,7 @@ or using script
 
   e.g.:
 ```
-  python ../python/generatetagsheet.py --dpp 10 -o tag25h5_sheet.svg -bx=1 -by=1 -td tag25h5/svg
+  python ../python/generatetagsheet.py -f tag25h6 --dpp 10 -bx=5 -by=2 -v 958 --output tagsheet_25h6_10dpp.svg
 ```
   this creates the sheet as SVG using mako template engine
   then convert it to PDF using svg2pdf_inkscape.sh
@@ -76,6 +76,13 @@ or using script
   for help:
 ```
   python ../python/generatetagsheet.py -h
+```
+
+  To create a test page:
+```
+    python ../python/generatetagsheet.py --custom custom_tag36h10 --output tagsheet_custom_36h10.svg
+    python ../python/generatetagsheet.py --custom custom_tag25h5 --output tagsheet_custom_25h5.svg
+    python ../python/generatetagsheet.py --custom custom_tag25h6 --output tagsheet_custom_25h6.svg
 ```
   
 
@@ -110,6 +117,29 @@ or using script
       for 9x9 tag, 1 tag pixel = 21 dots  
 
       at 72pt/pixel, 21dots=3.4pt
+
+- Create tag25h5inv sheet for 13x19 paper:
+for kerf_mm in 0.2 0.4 0.6 0.8 1.0; do echo kerf=$kerf_mm; python ../python/generatetagsheet.py -f tag25h5inv -p 5 -u 0 -v 3008 -bx 5 -by 7 -d 10 -s 2 -o tagsheet_25h5inv_10dpp_CUTS${kerf_mm}.svg -m 1 -pw 482.6 -ph 330.2 -bm 5.08 -tm 10 -kt -ktx 40 -kty 430 -kf ${kerf_mm}; done
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -u 0 -v 3008 -bx 5 -by 7 -d 10 -s 2 -o tagsheet_25h5inv_10dpp_color.svg -m=-2 -pw 482.6 -ph 330.2 -bm 5.08 -tm 10 -kt -ktx 40 -kty 430
+
+
+- Create tag25h5inv sheet for 13x19 paper:
+```
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -u 0 -v 3008 -bx 5 -by 7 -d 10 -s 2 -o tagsheet_25h5inv_10dpp_color.svg -m=-2 -pz 13x19 -bm 5.08 -tm 10 -kt -ktx 40 -kty 430
+```
+
+- Create tag25h5inv sheet for 8.5x11 paper:
+```
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0 -v 999 -bx 3 -by 4 -pz letter -bm 5.08 -tm 10 -kt -ktx 90 -kty 210 -sc -m=all -kf 0.2
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 1000 -v 1999 -bx 3 -by 4 -pz letter -bm 5.08 -tm 10 -kt -ktx 90 -kty 210 -sc -m=all -kf 0.2
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -bx 3 -by 4 -pz letter -bm 5.08 -tm 10 -kt -ktx 90 -kty 210 -sc -m=all -kf 0.2
+```
+
+- Create tag25h5inv sheet for 19x13 paper:
+```
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0 -v 3008 -bx 5 -by 7 -pz 13x19 -bm 5.08 -tm 10 -kt -ktx 40 -kty 430 -sc -m=all -kf 0.2
+```
 
 ## Troubleshooting
 

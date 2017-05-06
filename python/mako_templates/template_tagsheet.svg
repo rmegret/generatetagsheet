@@ -1,5 +1,5 @@
 ﻿## Template for standard tag sheet (1 type of tags, 1 size)\
-##\
+##
 <%include file="template_opening.svg"/>
 
 <%include file="template_page.svg"/>

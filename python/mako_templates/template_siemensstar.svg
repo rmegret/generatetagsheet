@@ -1,4 +1,6 @@
-﻿<%!
+﻿<%page args="ppi"/>
+
+<%!
   import math
 %>
   
@@ -8,35 +10,37 @@
         s=25.4/1200
         r=25.4/4
         #n = r * 2 pi / s = 1/4 * 2 pi * dpi = 0.5 dpi pi 
-        #for r=1/4 inch, n=1884 @1200, n=942 @ 600, n=471 @ 300, n=236 @150
-        n=236
+        #for r=1/4 inch:
+        # n=1884 @1200, n=942 @ 600, n=471 @ 300, n=236 @150, n=118 @150
+        n = round(0.5*ppi*math.pi)
      %>
+     
          <path d="
     %for i in range(0,n,2):
         M 0 0 L ${r*math.cos(i/n*2*math.pi)} ${r*math.sin(i/n*2*math.pi)} L ${r*math.cos((i+1)/n*2*math.pi)} ${r*math.sin((i+1)/n*2*math.pi)} L 0 0
     %endfor
           " stroke="none"/>
       <% 
-        s=25.4/150
+        s=25.4/ppi
         r1=n/2/math.pi*s
      %>
      <path d="M ${-r1} ${0} A ${r1} ${r1} 0 0 1 ${0} ${-r1}" fill="none" stroke="black" stroke-width="${0.2}"/>
       <% 
-        s=25.4/300
+        s=25.4/(ppi*2)
         r1=n/2/math.pi*s
      %>
      <path d="M ${-r1} ${0} A ${r1} ${r1} 0 0 1 ${0} ${-r1}" fill="none" stroke="white" stroke-width="${0.2}"/>
       <% 
-        s=25.4/600
+        s=25.4/(ppi*4)
         r1=n/2/math.pi*s
      %>
      <path d="M ${-r1} ${0} A ${r1} ${r1} 0 0 1 ${0} ${-r1}" fill="none" stroke="white" stroke-width="${0.2}"/>
       <% 
-        s=25.4/1200
+        s=25.4/(ppi*8)
         r1=n/2/math.pi*s
      %>
      <path d="M ${-r1} ${0} A ${r1} ${r1} 0 0 1 ${0} ${-r1}" fill="none" stroke="white" stroke-width="${0.2}"/>
      <text text-anchor="middle" dominant-baseline="alphabetic" dy="${-r-2}"
                   font-family="Helvetica" font-size="1"
-                  fill="#000000" xml:space="preserve">n=${n}, 150ppi circ.</text>
+                  fill="#000000" xml:space="preserve">n=${n}, ${ppi}ppi circ.</text>
                   

@@ -10,24 +10,40 @@ from mako.template import Template
 from mako import exceptions
 from mako.exceptions import RichTraceback
 from mako.lookup import TemplateLookup
+import argparse
 
 class Layout(object):
   def __init__(self):
     self.in2mm = 25.4
     
-    # Letter paper
-    self.page_h = 215.9 # mm
-    self.page_w = 279.4
+    self.family = "tag25h5inv"
+    self.tagcode_pix = 6          # image code
     
-    # page_w = 609.6/24*18# 609.6 # mm 24in
-    # page_h = 457.2/18*12 # 457.2 ## mm 18in
-
-    # 12"x18" paper: Synaps OM 5-Mil paper
+    self.first_id = 0
+    self.maxid = 3008 # for 25h5
+    
+    self.tagdir = '{family}/svg'
+    self.tagfiles = 'keyed{id:04d}.svg'
+    
+    self.output = None
+    self.output_basename = '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}'
+    
+    # Letter paper
+    self.page_size = 'letter'
+    self.page_w = 215.9 # mm
+    self.page_h = 279.4
+    self.paper_sizes={
+        'letter': [215.9, 279.4],
+        '8.5x11': [215.9, 279.4],
+        '11x8.5': [279.4, 215.9],
+        '19x13':  [482.6, 330.2],
+        '13x19':  [330.2, 482.6]
+        }
+    # 13"x19" paper: Synaps OM 5-Mil paper
+    # (corresponds to 12"x18" paper plus margin)
     # http://www.nekoosacoated.com/Products/Offset/Synaps-OM.aspx
     # http://www.rtape.com/product-lines/synaps-synthetic-paper/
-    #self.page_h = 457
-    #self.page_w = 305
-    
+
     self.nblocksx = 1
     self.nblocksy = 1
     
@@ -35,15 +51,23 @@ class Layout(object):
     self.ntagsy = 10
     
     # Global layout
-    self.axismargin_top =  0.75*self.in2mm  # Cross center
     self.axismargin_left = 0.75*self.in2mm
+    self.axismargin_top =  0.75*self.in2mm  # Cross center
     
-    self.tagsmargin_top =  1.00*self.in2mm  # First block top-left
-    self.tagsmargin_left = 0.75*self.in2mm
-    self.blockmargin     = 0.20*self.in2mm  # Margin between blocks
+    self.sheet_x0 = 1*self.in2mm  # First block top-left
+    self.sheet_y0 = 1*self.in2mm  
+    self.page_left = self.sheet_x0 # Default positionning
+    self.page_top  = self.sheet_y0 
+
+    self.pagemargin      = 0.15*self.in2mm  # Margin between pages    
+    self.blockmargin     = 0.15*self.in2mm  # Margin between blocks
+    self.tagmargin       = 5.0 # pix
     
-    self.title_fontsize=2.3 # 3 normally
-    self.block_fontsize=1.4 # 2 normally
+    self.title_fontsize=2.3 # 3mm normally
+    self.block_fontsize=1.4 # 2mm normally
+    self.fontfamily="Courier New"
+    self.fontsize_id=2      # pix
+    self.fontsize_idext=5   # pix
     
     self.custom = None
         
@@ -64,9 +88,8 @@ class Layout(object):
     
     # Tag parameters
     # self.tagsize = 1.6 # mm
-    self.tagdpp1200 = 9   # number of dots per tagpixel at 1200 dpi
+    self.tagdpp1200 = 10   # number of dots per tagpixel at 1200 dpi
     
-    self.tagcode_pix = 6          # image code
     self.tagborder_pix = 1       # inner border (included in img)
     self.tagmargin1_pix = 1      # minimal outer border for contrast
     self.tagmargin2_pix = 3      # outer border extra
@@ -74,47 +97,43 @@ class Layout(object):
     
     self.laserkerf_mm = 0.20
     self.cutweight_inch = 0.0015  # Minimum for Epilog is 0.001
-    
-    self.margin = 5.0 # pix
-    
-    self.family = "tag36h10inv"
-    self.first_id = 0
-    self.maxid = 2319 # for 36h10
-    
-    #self.tagdir = 'tag36h10inv/svg'
-    self.tagdir = '{family}/svg'
-    self.tagfiles = 'keyed{id:04d}.svg'
-    
-    self.output = 'tagsheet_out.svg'
+    self.cut_opening_factor = 0
     
     self.modestring = ""
 
-    self.style=1
+    self.style='auto'
     self.tagbgcolor="white"
     self.border1color="white"
     self.border2color="white"
     self.textcolor="black"
     self.arrowcolor="black"
     self.crosscolor="black"
+    self.tagid_bgcolor="#600060"
+    self.tagcornercolor1="#006060"
+    self.tagcornercolor2="#606000"
+    self.show_colored_corners=False
+    self.show_arrows=False
 
-    self.fontsize_id=2
-    self.fontfamily="Courier New"
-    
-    #self.show_opening = True
-    #self.show_tagpage = True
-    #self.show_closing = True
+    self.mode = 'tags'
+    self.show_crosses = True
+    self.show_test_patterns = True
+    self.show_kerftest = False
+    self.kerftest_left = 40
+    self.kerftest_top = 450
     
     self.show_page_title = True
-    self.show_test_patterns = True
-    self.show_footer = True
+    self.show_page_rect = False
     
     self.show_block_rect = False
     self.show_block_title = True
+    
     self.show_tag_cell = False
     self.show_tag = True
     self.show_tag_img = True
     self.show_tag_cut = False
     self.show_tag_cutkerf = False
+    
+    self.show_footer = True
     
     self.recompute_lengths()
   
@@ -123,39 +142,54 @@ class Layout(object):
     return round(val_in*300)/300*self.in2mm
   
   def recompute_lengths(self):
-    if (self.style==1):
+    self.recomputeflags()
+    self.recomputepagesize()
+  
+    if (self.style=='auto'):
+        if (self.family.endswith('inv')):
+            self.style1='invtag'
+        else:
+            self.style1='tag'
+    if (self.style=='autodebug'):
+        if (self.family.endswith('inv')):
+            self.style1='invtagdebug'
+        else:
+            self.style1='tagdebug'
+    self.style1=self.style
+        
+    if (self.style1=='tag'):
         self.tagbgcolor="white"
         self.border1color="white"
         self.border2color="white"
         self.textcolor="black"
         self.arrowcolor="black"
-    elif (self.style==-1):
+    elif (self.style1=='tagdebug'):
         self.tagbgcolor="lightyellow"
         self.border1color="lightcyan"
         self.border2color="lightskyblue"
         self.textcolor="black"
         self.arrowcolor="darkred"
-    elif (self.style==2):
+    elif (self.style1=='invtag'):
         self.tagbgcolor="white"
         self.border1color="black"
         self.border2color="black"
         self.textcolor="white"
         self.arrowcolor="white"
-    elif (self.style==-2):
+    elif (self.style1=='invtagdebug'):
         self.tagbgcolor="#DFD"
         self.border1color="darkblue"
         self.border2color="mediumblue"
         self.textcolor="white"
         self.arrowcolor="lightcyan"
     else:
-        print('ERROR: Unknown style={}'.format(self.style))
+        print('ERROR: Unknown style={}'.format(self.style1))
 
     # When recomputing, hint core alignments parameters to be integer at 300dpi
 
-    self.tagsmargin_top = self.apply_hint_mm(self.tagsmargin_top)
-    self.tagsmargin_left = self.apply_hint_mm(self.tagsmargin_left)
+    self.sheet_y0 = self.apply_hint_mm(self.sheet_y0)
+    self.sheet_x0 = self.apply_hint_mm(self.sheet_x0)
 
-    self.last_id  = max(self.maxid, self.first_id+self.nblocksx*self.nblocksy*self.ntagsx*self.ntagsy)
+    self.last_id  = min(self.maxid, self.first_id+self.nblocksx*self.nblocksy*self.ntagsx*self.ntagsy)
   
     self.tagsize_pix = self.tagcode_pix + 2*self.tagborder_pix
     self.tagsize1_pix = self.tagsize_pix+2*self.tagmargin1_pix
@@ -167,20 +201,73 @@ class Layout(object):
     self.pix2mm = self.tagsize/self.tagsize_pix
     self.pt2mm = (279.4/11)/72 # 1pt=1/71in
     
+    self.laserkerf_um=round(self.laserkerf_mm*1000)
     self.laserkerf_pix=self.laserkerf_mm/self.pix2mm
     self.cutmargin_pix = self.laserkerf_pix/2
+    self.cut_opening_pix = self.cut_opening_factor*self.laserkerf_pix
     
     self.cutweight_pix = self.cutweight_inch * 25.4 / self.pix2mm
 
-    self.margin = self.apply_hint_mm(self.margin*self.pix2mm)/self.pix2mm
-    self.step_x=self.apply_hint_mm((self.tagwidth2_pix+self.margin)*self.pix2mm)
-    self.step_y=self.apply_hint_mm((self.tagheight2_pix+self.margin)*self.pix2mm)
+    self.tagmargin = self.apply_hint_mm(self.tagmargin*self.pix2mm)/self.pix2mm
+    self.step_x=self.apply_hint_mm((self.tagwidth2_pix+self.tagmargin)*self.pix2mm)
+    self.step_y=self.apply_hint_mm((self.tagheight2_pix+self.tagmargin)*self.pix2mm)
     
-    self.blockwidth_x=self.step_x*self.ntagsx
-    self.blockwidth_y=self.step_y*self.ntagsy
-    self.blockstep_x=self.apply_hint_mm(self.step_x*self.ntagsx + self.blockmargin)
-    self.blockstep_y=self.apply_hint_mm(self.step_y*self.ntagsy + self.blockmargin)
+    self.blocksize_x=self.step_x*self.ntagsx
+    self.blocksize_y=self.step_y*self.ntagsy
+    self.blockstep_x=self.apply_hint_mm(self.blocksize_x + self.blockmargin)
+    self.blockstep_y=self.apply_hint_mm(self.blocksize_y + self.blockmargin)
     
+    self.page_left = self.apply_hint_mm(self.page_left)
+    self.page_top = self.apply_hint_mm(self.page_top)
+    self.pagesize_x = self.blockstep_x*(self.nblocksx-1)+self.blocksize_x
+    self.pagesize_y = self.blockstep_y*(self.nblocksy-1)+self.blocksize_y
+    self.pagestep_x = self.apply_hint_mm(self.pagesize_x+self.pagemargin)
+    self.pagestep_y = self.apply_hint_mm(self.pagesize_y+self.pagemargin)
+    
+    overshootx = (self.page_left+self.blockstep_x*self.nblocksx) - (self.page_w-self.axismargin_left)
+    if (overshootx>0):
+        print('WARNING too many block X axis: overshoot by {}mm'.format(overshootx))
+        print('Suggested nblockx < {}'.format((self.page_w-self.axismargin_left-self.page_left)/self.blockstep_x))
+    overshooty = (self.page_top+self.blockstep_y*self.nblocksy) - (self.page_h-self.axismargin_top)
+    if (overshooty>0):
+        print('WARNING too many block Y axis: overshoot by {}mm'.format(overshooty))
+        print('Suggested nblockx < {}'.format((self.page_h-self.axismargin_top-self.page_top)/self.blockstep_y))
+    
+  def recomputeflags(self):
+    if (self.mode=='tags'): # Tags
+      self.show_tag = True
+      self.show_tag_cut = False
+      self.show_tag_cutkerf = False
+      self.show_block_rect = False
+      self.show_block_title = True
+      self.show_page_title = True
+      self.show_test_patterns = True
+      self.show_crosses = True
+      self.modestring = "TAGS"
+    elif (mode=='cuts'): # Cut
+      self.show_tag = False
+      self.show_tag_cut = True
+      self.show_tag_cutkerf = False
+      self.show_block_rect = False
+      self.show_block_title = False
+      self.show_page_title = True
+      self.show_test_patterns = False
+      self.show_crosses = False
+      self.modestring = "CUTS"
+    elif (mode=='view'): # Preview: Both tags and cuts
+      self.show_tag = True
+      self.show_tag_cut = True
+      self.show_tag_cutkerf = True
+      self.show_block_rect = True
+      self.show_block_title = True
+      self.show_page_title = True
+      self.show_test_patterns = True
+      self.show_crosses = True
+      self.modestring = "PREVIEW"
+    else:
+      print('ERROR: Unknown mode {}'.format(mode))
+  
+  def recomputepaths(self):
     # Compute the relative path from output sheet to svg images so the links 
     # in the SVG will keep working wherever we create the sheet, 
     # and if we move around the sheet with the input tags
@@ -190,6 +277,36 @@ class Layout(object):
     self.abstagdir = self.tagdir.format(family=self.family)
     self.reltagdir = os.path.relpath(self.abstagdir, os.path.dirname(self.output))
     
+  def recomputepagesize(self):    
+    if (self.page_size=='custom'):
+        pass # rely on page_w and page_h to be defined
+    else:
+        size = self.paper_sizes[self.page_size]
+        self.page_w = size[0]
+        self.page_h = size[1]
+    
+#   class PageSizeAction(argparse.Action):
+#     def __init__(self, option_strings=None, dest=None, nargs=None, **kwargs):
+#         if nargs is not None:
+#             raise ValueError("nargs not allowed")
+#         super(PageSizeAction, self).__init__(option_strings, dest, **kwargs)
+#         self.sizes={
+#             '8.5x11': [215.9, 279.4],
+#             '11x8.5': [279.4, 215.9],
+#             '19x13':  [482.6, 330.2],
+#             '13x19':  [330.2, 482.6]
+#             }
+#     def getSize(self,name):
+#         return self.sizes[name]
+#     def __call__(self, parser, namespace, values, option_string=None):
+#         #print('--page_size: %r %r %r' % (namespace, values, option_string))
+#         
+#         size = self.getSize(values)
+#                 
+#         setattr(namespace, 'page_w', size[0])
+#         setattr(namespace, 'page_h', size[1])
+#         
+#         print('Option --page_size {}: page_w={}, page_h={}'.format(values, size[0], size[1]))
   
 from beaker.cache import CacheManager
 
@@ -221,6 +338,7 @@ class Generator(object):
     if (self.verbose>0):
       print("Rendering template '{}'...".format(name))
     
+    layout.recomputepaths()
     for field in kargs:
         setattr(self.layout, field, kargs[field])
     V = self.getvars()
@@ -274,23 +392,30 @@ class Generator(object):
     self.layout.ntagsx = 10
     self.layout.ntagsy = 10
     
-    self.layout.margin = 8.0 # pix
+    self.layout.tagmargin = 5.0 # pix
 
-    self.layout.tagdpp1200 = 10  # Compute lengths for largest page
-    self.layout.recompute_lengths()
-    x0 = self.layout.in2mm
-    y0 = self.layout.in2mm
-    shift_x = self.layout.blockstep_x*self.layout.nblocksx+10
-    shift_y = self.layout.blockstep_y*self.layout.nblocksy+10
+    class GridLayout(object):
+      def __init__(self, layout, dpp=10):
+        self.layout = layout
+        self.setdpp(dpp)
+
+      def setdpp(self,dpp):
+        self.dpp = dpp
+        self.layout.tagdpp1200 = dpp  # Compute lengths for largest page
+        self.layout.recompute_lengths()
         
-    def pos(i,j):
-        return {'tagsmargin_left': x0+i*shift_x, 'tagsmargin_top': y0+j*shift_y}
+      def pos(self,i,j):
+          return {
+              'page_left': self.layout.sheet_x0+i*self.layout.pagestep_x, 
+              'page_top': self.layout.sheet_y0+j*self.layout.pagestep_y
+              }
+    gl = GridLayout(self.layout)
         
     def dpp4mm(tagsize_pix,tagsize_mm):
         return tagsize_mm / tagsize_pix * 1200 / 25.4
         
     def render_page(**kargs):
-        print("Rendering page family={family}, tagdpp1200={tagdpp1200}".format(**kargs))
+        print("Rendering page family={family}, tagdpp1200={tagdpp1200} at (left,top)=({page_left:.1f},{page_top:.1f})".format(**kargs))
         svgtext = self.render('template_page.svg', **kargs)
         return svgtext
 
@@ -299,44 +424,66 @@ class Generator(object):
                  tagcode_pix = 6, style=1)
       taginv = dict(family="tag36h10inv", tagdir='tag36h10inv/svg', 
                     tagcode_pix = 6, style=2)
+                    
+      gl.setdpp(10)
 
-      svgtext += render_page(tagdpp1200=10, **taginv, **pos(0,0))
-      svgtext += render_page(tagdpp1200=10, **tag,    **pos(1,0))
-      svgtext += render_page(tagdpp1200=9, **taginv, **pos(0,1))
-      svgtext += render_page(tagdpp1200=9, **tag,    **pos(1,1))
-      svgtext += render_page(tagdpp1200=8,  **taginv, **pos(0,2))
-      svgtext += render_page(tagdpp1200=8,  **tag,    **pos(1,2))
+      svgtext += render_page(tagdpp1200=10, **taginv, **gl.pos(0,0))
+      svgtext += render_page(tagdpp1200=10, **tag,    **gl.pos(1,0))
+      svgtext += render_page(tagdpp1200=9, **taginv, **gl.pos(0,1))
+      svgtext += render_page(tagdpp1200=9, **tag,    **gl.pos(1,1))
+      svgtext += render_page(tagdpp1200=8,  **taginv, **gl.pos(0,2))
+      svgtext += render_page(tagdpp1200=8,  **tag,    **gl.pos(1,2))
     elif (self.layout.custom=='custom_tag25h6'):
       tag = dict(family="tag25h6", tagdir='tag25h6/svg', 
                  tagcode_pix = 5, style=1)
       taginv = dict(family="tag25h6inv", tagdir='tag25h6inv/svg',
                     tagcode_pix = 5, style=2)
 
-      svgtext += render_page(tagdpp1200=11, **taginv, **pos(0,0))
-      svgtext += render_page(tagdpp1200=11, **tag,    **pos(1,0))
-      svgtext += render_page(tagdpp1200=10, **taginv, **pos(0,1))
-      svgtext += render_page(tagdpp1200=10, **tag,    **pos(1,1))
-      svgtext += render_page(tagdpp1200=9,  **taginv, **pos(0,2))
-      svgtext += render_page(tagdpp1200=9,  **tag,    **pos(1,2))
+      gl.setdpp(11)
+
+      svgtext += render_page(tagdpp1200=11, **taginv, **gl.pos(0,0))
+      svgtext += render_page(tagdpp1200=11, **tag,    **gl.pos(1,0))
+      svgtext += render_page(tagdpp1200=10, **taginv, **gl.pos(0,1))
+      svgtext += render_page(tagdpp1200=10, **tag,    **gl.pos(1,1))
+      svgtext += render_page(tagdpp1200=9,  **taginv, **gl.pos(0,2))
+      svgtext += render_page(tagdpp1200=9,  **tag,    **gl.pos(1,2))
     elif (self.layout.custom=='custom_tag25h5'):
       tag = dict(family="tag25h5", tagdir='tag25h5/svg',
                  tagcode_pix = 5, style=1)
       taginv = dict(family="tag25h5inv", tagdir='tag25h5inv/svg',     
                     tagcode_pix = 5, style=2)
 
-      svgtext += render_page(tagdpp1200=11, **taginv, **pos(0,0))
-      svgtext += render_page(tagdpp1200=11, **tag,    **pos(1,0))
-      svgtext += render_page(tagdpp1200=10, **taginv, **pos(0,1))
-      svgtext += render_page(tagdpp1200=10, **tag,    **pos(1,1))
-      svgtext += render_page(tagdpp1200=9,  **taginv, **pos(0,2))
-      svgtext += render_page(tagdpp1200=9,  **tag,    **pos(1,2))
+      gl.setdpp(11)
+
+      svgtext += render_page(tagdpp1200=11, **taginv, **gl.pos(0,0))
+      svgtext += render_page(tagdpp1200=11, **tag,    **gl.pos(1,0))
+      svgtext += render_page(tagdpp1200=10, **taginv, **gl.pos(0,1))
+      svgtext += render_page(tagdpp1200=10, **tag,    **gl.pos(1,1))
+      svgtext += render_page(tagdpp1200=9,  **taginv, **gl.pos(0,2))
+      svgtext += render_page(tagdpp1200=9,  **tag,    **gl.pos(1,2))
     elif (self.layout.custom=='custom_test'):
       tag = dict(family="tag25h5", tagdir='tag25h5/svg',
                  tagcode_pix = 5, style=1)
       taginv = dict(family="tag25h5inv", tagdir='tag25h5inv/svg',     
                     tagcode_pix = 5, style=2)
 
-      svgtext += render_page(tagdpp1200=11, **taginv, **pos(0,0))
+      svgtext += render_page(tagdpp1200=11, **taginv, **gl.pos(0,0))
+    elif (self.layout.custom=='custom_tag25h6_dpp10'):
+      tag = dict(family="tag25h6", tagdir='tag25h6/svg', maxid=958,
+                 tagcode_pix = 5, style=1)
+      taginv = dict(family="tag25h6inv", tagdir='tag25h6inv/svg', maxid=958,
+                    tagcode_pix = 5, style=2)
+
+      self.layout.sheet_x0 = 25.4*1.00
+      self.layout.sheet_y0 = 25.4*0.75
+      self.layout.pagemargin = 10
+      self.layout.nblocksx = 5
+      self.layout.nblocksy = 2
+      self.layout.tagmargin = 5.0 # pix
+      gl.setdpp(10)
+
+      svgtext += render_page(tagdpp1200=10, **taginv, **gl.pos(0,0))
+      svgtext += render_page(tagdpp1200=10, **tag,    **gl.pos(0,1))
     else:
       print('ERROR: unknown custom layout, custom={}'.format(self.layout.custom))
       return
@@ -375,25 +522,34 @@ class Generator(object):
 
 
 
+
+class CustomPageSizeAction(argparse.Action):
+    def __init__(self, option_strings=None, dest=None, nargs=None, **kwargs):
+        if nargs is not None:
+            raise ValueError("nargs not allowed")
+        super(CustomPageSizeAction, self).__init__(option_strings, dest, **kwargs)
+    def __call__(self, parser, namespace, values, option_string=None):
+        #print('--page_size: %r %r %r' % (namespace, values, option_string))
+                
+        setattr(namespace, 'page_size', 'custom')
+        
+        print('Option {} set page_size to custom'.format(option_string))
+
 if __name__ == "__main__":
 
-    
     layout = Layout()
     generator = Generator(layout)
-
-
-    import argparse
 
     parser = argparse.ArgumentParser(description='Generate SVG tag sheet given a directory <tagdir> of tag images', formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--dpp', '-d', type=int,
                         dest='tagdpp1200', default=layout.tagdpp1200,
                         help='number of printer dots per pixel of the tag at 1200 dpi.\nFor 6 pixels code, dpp=8 -> 1.37mm, dpp=9 -> 1.54mm tag, dpp=10 -> 1.71mm tag')
-    parser.add_argument('-o', '--output', metavar='<tagsheet.svg>', 
-                        dest='output', default=layout.output,
-                        help='output file (default: %(default)s)')
-    parser.add_argument('-s', '--style', metavar='<style>', type=int,
-                        dest='style', default=layout.style,
-                        help='color style: 1=tag, 2=invtag, -i=debug style i (default: %(default)s)')
+#     parser.add_argument('-o', '--output', metavar='<tagsheet-TAGS.svg>', 
+#                         dest='output', default=layout.output,
+#                         help='basename for output file (default: %(default)s)')
+    parser.add_argument('-ob', '--output_basename', metavar='<tagsheet>', 
+                        dest='output_basename', default=layout.output_basename,
+                        help='basename for output file (default: %(default)s)')
     parser.add_argument('-f', '--family', metavar='<family>', 
                         dest='family', default=layout.family,
                         help='tag family name (default: %(default)s)')
@@ -412,78 +568,125 @@ if __name__ == "__main__":
     parser.add_argument('-v', '--maxid', metavar='<max_id>', type=int,
                         dest='maxid', default=layout.maxid,
                         help='last id, inclusive (default: %(default)s)')
-    parser.add_argument('-m', '--mode', metavar='<mode>', type=int,
-                        dest='mode', default=0,
-                        help='sheet mode\n0=tags, 1=cuts, 2=cuts-preview (default: %(default)s)')
+    parser.add_argument('-s', '--style', metavar='<style>',
+                        dest='style', default=layout.style,
+                        help='color style: auto, tag, invtag, tagdebug, invdebug (default: %(default)s)')
+    parser.add_argument('-sc', '--show_colored_corners', action='store_true',
+                        dest='show_colored_corners', default=layout.show_colored_corners,
+                        help='Margin2 is colored (default: %(default)s)')
+    parser.add_argument('-sa', '--show_arrows', action='store_true',
+                        dest='show_arrows', default=layout.show_arrows,
+                        help='Margin2 show contrasting arrows (default: %(default)s)')
+    parser.add_argument('-m', '--mode', metavar='<mode>',
+                        dest='mode', default='tags',
+                        help='sheets to generate, as comma separated list: tags,cuts,view or all (default: %(default)s)')
+    parser.add_argument('-pz','--page_size', metavar='<size_name>', 
+                        dest='page_size', default=layout.page_size,
+                        help='page size (options: {}, default: %(default)s)'.format(list(layout.paper_sizes.keys()), layout.page_size))
     parser.add_argument('-pw', '--page_w', metavar='<page_w>', type=float,
                         dest='page_w', default=layout.page_w,
+                        action=CustomPageSizeAction,
                         help='page width in mm (default: %(default)s)')
     parser.add_argument('-ph', '--page_h', metavar='<page_h>', type=float,
                         dest='page_w', default=layout.page_h,
+                        action=CustomPageSizeAction,
                         help='page width in mm (default: %(default)s)')
+    parser.add_argument('-px', '--page_left', metavar='<page_left>', type=float,
+                        dest='page_left', default=layout.page_left,
+                        help='x0 of tags in mm (default: %(default)s)')
+    parser.add_argument('-py', '--page_top', metavar='<page_top>', type=float,
+                        dest='page_top', default=layout.page_top,
+                        help='y0 of tags in mm (default: %(default)s)')
     parser.add_argument('-bx', '--nblocksx', metavar='<nblocksx>', type=int,
                         dest='nblocksx', default=layout.nblocksx,
                         help='number of tags in a block row (default: %(default)s)')
     parser.add_argument('-by', '--nblocksy', metavar='<nblocksy>', type=int,
                         dest='nblocksy', default=layout.nblocksy,
                         help='number of tags in a block column (default: %(default)s)')
+    parser.add_argument('-bm', '--blockmargin', metavar='<mm>', type=float,
+                        dest='blockmargin', default=layout.nblocksy,
+                        help='margin between blocks (default: %(default)s)')
     parser.add_argument('-nx', '--ntagsx', metavar='<ntagsx>', type=int,
                         dest='ntagsx', default=layout.ntagsx,
                         help='number of tags in a block row (default: %(default)s)')
     parser.add_argument('-ny', '--ntagsy', metavar='<ntagsy>', type=int,
                         dest='ntagsy', default=layout.ntagsy,
                         help='number of tags in a block column (default: %(default)s)')
+    parser.add_argument('-tm', '--tagmargin', metavar='<pixels>', type=int,
+                        dest='tagmargin', default=layout.tagmargin,
+                        help='number of pixels of margin between tags (default: %(default)s)')
     parser.add_argument('-r', '--rasterize',  
                         dest='rasterize', action='store_true',
                         help='rasterize output PDF')
     parser.add_argument('-c', '--custom',  metavar='<layout name>',
                         dest='custom', default=layout.custom,
-                        choices='custom_tag25h5,custom_tag25h6,custom_tag36h10,,custom_test'.split(','),
+                        choices='custom_tag25h5,custom_tag25h6,custom_tag36h10,custom_tag25h6_dpp10,custom_test'.split(','),
                         help='Use custom layout (hardcoded %(choices)s)')
+    parser.add_argument('-cx', '--axismargin_left', metavar='<marginleft>', 
+                        type=float,
+                        dest='axismargin_left', default=layout.axismargin_left,
+                        help='margin to center of cross (default: %(default)s)')
+    parser.add_argument('-cy', '--axismargin_top', metavar='<margintop>', 
+                        type=float,
+                        dest='axismargin_top', default=layout.axismargin_left,
+                        help='margin to center of cross (default: %(default)s)')
+    parser.add_argument('-kf', '--laserkerf_mm', metavar='<kerf in mm>', 
+                        type=float,
+                        dest='laserkerf_mm', default=layout.laserkerf_mm,
+                        help='thickness of laser in mm (default: %(default)s)')
+    parser.add_argument('-ko', '--cut_opening_factor', metavar='<factor>', 
+                        type=float,
+                        dest='cut_opening_factor', default=layout.cut_opening_factor,
+                        help='width of top opening as a factor of laserkerf_mm (default: %(default)s)')
+    parser.add_argument('-kt', '--show_kerftest', action='store_true',
+                        dest='show_kerftest', default=layout.show_kerftest,
+                        help='show kerf testpattern (default: %(default)s)')
+    parser.add_argument('-ktx', '--kerftest_left', type=float,
+                        dest='kerftest_left', default=layout.kerftest_left,
+                        help='left corner of kerf test pattern (default: %(default)s)')
+    parser.add_argument('-kty', '--kerftest_top', type=float,
+                        dest='kerftest_top', default=layout.kerftest_top,
+                        help='top corner of kerf test pattern (default: %(default)s)')
+    parser.add_argument('--verbose', metavar='<level>', 
+                        type=int,
+                        dest='verbose', default=1,
+                        help='Verbosity level (default: %(default)s)')
     args = parser.parse_args()    
-    
-    fields='tagdpp1200,output,style,tagdir,tagfiles,family,first_id,maxid,nblocksx,nblocksy,ntagsx,ntagsy,rasterize,custom'.split(',')
+    fields=sorted(vars(args).keys())
     for field in fields:
         #print("  Configuring '{}'".format(field))
-        #print("  Configuring {}={}".format(field,getattr(args,field)))
+        print("  Configuring {}={}".format(field,getattr(args,field)))
         setattr(layout, field,getattr(args,field))
-    
+    generator.verbose = args.verbose
         
-    def setMode(layout,mode):
-        if (mode==0): # Tags
-          layout.show_tag = True
-          layout.show_tag_cut = False
-          layout.show_tag_cutkerf = False
-          layout.show_block_rect = False
-          layout.modestring = "TAGS"
-        elif (mode==1): # Cut
-          layout.show_tag = False
-          layout.show_tag_cut = True
-          layout.show_tag_cutkerf = False
-          layout.show_block_rect = False
-          layout.modestring = "CUTS"
-        elif (mode==2): # Preview: Both tags and cuts
-          layout.show_tag = True
-          layout.show_tag_cut = True
-          layout.show_tag_cutkerf = True
-          layout.show_block_rect = True
-          layout.modestring = "PREVIEW"
+    def computeOutputFile(generator):
+        V = generator.getvars()
+        base = generator.layout.output_basename.format(**V)
+        if (mode=='tags'): # Tags
+          suffix_pattern = '_TAGS.svg'
+        elif (mode=='cuts'): # Cut
+          suffix_pattern = '_CUTS{laserkerf_um}-{cut_opening_factor}.svg'
+        elif (mode=='view'): # Preview: Both tags and cuts
+          suffix_pattern = '_VIEW{laserkerf_um}-{cut_opening_factor}.svg'
         else:
           print('ERROR: Unknown mode {}'.format(mode))
+        suffix = suffix_pattern.format(**V)
+        layout.output = base+suffix
 
-
-    if (args.mode>=0):
-        setMode(layout,args.mode)
+    if (args.mode == 'all'):
+        args.mode = 'tags,cuts,view'
+        
+    for mode in args.mode.split(','):
+        layout.mode = mode
+        computeOutputFile(generator)
+        print('Generating mode "{}" --> {}...'.format(mode,layout.output))
         generator.generate()
         if (args.rasterize):
             generator.rasterize()
-    else:
-        basename=re.sub('\.svg$', '', args.output)
-        setMode(layout,0)
-        generator.generate(svg=basename+'.TAGS.svg')
-        setMode(layout,1)
-        generator.generate(svg=basename+'.CUTS{}.svg'.format(int(layout.laserkerf_mm*1000))) 
-        setMode(layout,2)
-        generator.generate(svg=basename+'.PREVIEW{}.svg'.format(int(layout.laserkerf_mm*1000)))    
-    
+
+
+
+
+
+
 
