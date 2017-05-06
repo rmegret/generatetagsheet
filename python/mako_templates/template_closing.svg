@@ -23,7 +23,7 @@
           fill="black">
           <tspan x="0" y="3">
 Parameters: 
-%for item in 'page_w,page_h,sheet_x0,sheet_y0,blockmargin,tagmargin,tagdpp1200,style,tagcode_pix,tagborder_pix,tagsize_pix,tagsize,tagmargin1_pix,tagmargin2_pix,idheight_pix,laserkerf_mm'.split(','):
+%for item in 'page_w,page_h,sheet_x0,sheet_y0,blockmargin,tagmarginx,tagmarginy,tagdpp1200,style,tagcode_pix,tagborder_pix,tagsize_pix,tagsize,tagmargin1_pix,tagmargin2_pix,idheight_pix,laserkerf_mm'.split(','):
   <% 
       value = context.get(item) 
       if (type(value)==float):

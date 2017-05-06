@@ -138,7 +138,7 @@ python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -b
 
 - Create tag25h5inv sheet for 19x13 paper:
 ```
-python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0 -v 3008 -bx 5 -by 7 -pz 13x19 -bm 5.08 -tm 10 -kt -ktx 40 -kty 430 -sc -m=all -kf 0.2
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0 -v 3008 -bx 5 -by 7 -pz 13x19 -bm 5.08 -tm 10,13 -kt -ktx 180 -kty 430 -sc -m=all -kf 0.2
 ```
 
 ## Troubleshooting

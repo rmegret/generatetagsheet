@@ -222,7 +222,7 @@
          <g id="${id}">
             <rect x="${cut_left}" y="${cut_top}" width="${cut_width}" height="${cut_height}" 
                   rx="${r}" ry="${cut_radius}" 
-                  fill="none" stroke="#FF0" stroke-opacity="0.5" stroke-width="${laserkerf_pix}"/>
+                  fill="none" stroke="#FF0" stroke-opacity="${kerf_opacity}" stroke-width="${laserkerf_pix}"/>
           </g>
   %else:
    <g id="${id}">
@@ -241,7 +241,7 @@
                A ${r} ${r} 0  0 0  ${cut_left+cut_width-r},${cut_top}
                
                L ${cut_left+cut_width/2+opening/2},${cut_top}" x="${cut_left}" y="${cut_top}" 
-            fill="none" stroke="#FF0" stroke-opacity="0.5" stroke-width="${laserkerf_pix}" stroke-linecap="round"/>
+            fill="none" stroke="#FF0" stroke-opacity="${kerf_opacity}" stroke-width="${laserkerf_pix}" stroke-linecap="round"/>
     </g>
   %endif
 </%def>
@@ -299,7 +299,7 @@
               font-family="${fontfamily}" font-weight="bolder" font-size="${fontsize_id}" 
               fill="${textcolor}">${laserkerf_mm}</text>
 
-        <text class="tagvalue" x="${cx}" y="-${tagmargin1_pix+tagmargin/2}" text-anchor="middle" 
+        <text class="tagvalue" x="${cx}" y="-${tagmargin1_pix+tagmarginy/2}" text-anchor="middle" 
               font-family="${fontfamily}" font-weight="bolder" font-size="${fontsize_id*2}" 
               fill="black">${laserkerf_mm},${cut_opening_factor}</text>
     

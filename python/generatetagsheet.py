@@ -61,7 +61,8 @@ class Layout(object):
 
     self.pagemargin      = 0.15*self.in2mm  # Margin between pages    
     self.blockmargin     = 0.15*self.in2mm  # Margin between blocks
-    self.tagmargin       = 5.0 # pix
+    self.tagmarginx      = 5.0 # pix
+    self.tagmarginy      = 5.0 # pix
     
     self.title_fontsize=2.3 # 3mm normally
     self.block_fontsize=1.4 # 2mm normally
@@ -132,6 +133,7 @@ class Layout(object):
     self.show_tag_img = True
     self.show_tag_cut = False
     self.show_tag_cutkerf = False
+    self.kerf_opacity = 1
     
     self.show_footer = True
     
@@ -150,12 +152,13 @@ class Layout(object):
             self.style1='invtag'
         else:
             self.style1='tag'
-    if (self.style=='autodebug'):
+    elif (self.style=='autodebug'):
         if (self.family.endswith('inv')):
             self.style1='invtagdebug'
         else:
             self.style1='tagdebug'
-    self.style1=self.style
+    else:
+        self.style1=self.style
         
     if (self.style1=='tag'):
         self.tagbgcolor="white"
@@ -208,9 +211,10 @@ class Layout(object):
     
     self.cutweight_pix = self.cutweight_inch * 25.4 / self.pix2mm
 
-    self.tagmargin = self.apply_hint_mm(self.tagmargin*self.pix2mm)/self.pix2mm
-    self.step_x=self.apply_hint_mm((self.tagwidth2_pix+self.tagmargin)*self.pix2mm)
-    self.step_y=self.apply_hint_mm((self.tagheight2_pix+self.tagmargin)*self.pix2mm)
+    self.tagmarginx = self.apply_hint_mm(self.tagmarginx*self.pix2mm)/self.pix2mm
+    self.tagmarginy = self.apply_hint_mm(self.tagmarginy*self.pix2mm)/self.pix2mm
+    self.step_x=self.apply_hint_mm((self.tagwidth2_pix+self.tagmarginx)*self.pix2mm)
+    self.step_y=self.apply_hint_mm((self.tagheight2_pix+self.tagmarginy)*self.pix2mm)
     
     self.blocksize_x=self.step_x*self.ntagsx
     self.blocksize_y=self.step_y*self.ntagsy
@@ -236,6 +240,7 @@ class Layout(object):
   def recomputeflags(self):
     if (self.mode=='tags'): # Tags
       self.show_tag = True
+      self.show_tag_img = True
       self.show_tag_cut = False
       self.show_tag_cutkerf = False
       self.show_block_rect = False
@@ -246,6 +251,7 @@ class Layout(object):
       self.modestring = "TAGS"
     elif (mode=='cuts'): # Cut
       self.show_tag = False
+      self.show_tag_img = False
       self.show_tag_cut = True
       self.show_tag_cutkerf = False
       self.show_block_rect = False
@@ -256,6 +262,7 @@ class Layout(object):
       self.modestring = "CUTS"
     elif (mode=='view'): # Preview: Both tags and cuts
       self.show_tag = True
+      self.show_tag_img = False
       self.show_tag_cut = True
       self.show_tag_cutkerf = True
       self.show_block_rect = True
@@ -392,7 +399,8 @@ class Generator(object):
     self.layout.ntagsx = 10
     self.layout.ntagsy = 10
     
-    self.layout.tagmargin = 5.0 # pix
+    self.layout.tagmarginx = 5.0 # pix
+    self.layout.tagmarginy = 5.0 # pix
 
     class GridLayout(object):
       def __init__(self, layout, dpp=10):
@@ -479,7 +487,8 @@ class Generator(object):
       self.layout.pagemargin = 10
       self.layout.nblocksx = 5
       self.layout.nblocksy = 2
-      self.layout.tagmargin = 5.0 # pix
+      self.layout.tagmarginx = 5.0 # pix
+      self.layout.tagmarginy = 5.0 # pix
       gl.setdpp(10)
 
       svgtext += render_page(tagdpp1200=10, **taginv, **gl.pos(0,0))
@@ -534,6 +543,28 @@ class CustomPageSizeAction(argparse.Action):
         setattr(namespace, 'page_size', 'custom')
         
         print('Option {} set page_size to custom'.format(option_string))
+class TagMarginAction(argparse.Action):
+    def __init__(self, option_strings=None, dest=None, nargs=None, **kwargs):
+        if nargs is not None:
+            raise ValueError("nargs not allowed")
+        super(TagMarginAction, self).__init__(option_strings, dest, **kwargs)
+    def __call__(self, parser, namespace, values, option_string=None):
+        #print('--page_size: %r %r %r' % (namespace, values, option_string))
+                
+        vals = values.split(',')
+        if (len(vals)==1):
+            tagmarginx = float(vals[0])
+            tagmarginy = float(vals[0])
+        elif (len(vals)==2):
+            tagmarginx = float(vals[0])
+            tagmarginy = float(vals[1])
+        else:
+            raise argparse.ArgumentTypeError('Incorrect format. Should be either <pixels> or <pixelsx>,<pixelsy>')
+                
+        setattr(namespace, 'tagmarginx', tagmarginx)
+        setattr(namespace, 'tagmarginy', tagmarginy)
+        
+        print('--tagmargin: set to {},{}'.format(tagmarginx,tagmarginy))
 
 if __name__ == "__main__":
 
@@ -612,8 +643,14 @@ if __name__ == "__main__":
     parser.add_argument('-ny', '--ntagsy', metavar='<ntagsy>', type=int,
                         dest='ntagsy', default=layout.ntagsy,
                         help='number of tags in a block column (default: %(default)s)')
-    parser.add_argument('-tm', '--tagmargin', metavar='<pixels>', type=int,
-                        dest='tagmargin', default=layout.tagmargin,
+    parser.add_argument('-tm', '--tagmargin', metavar='<mx,my> or <m>', 
+                        action=TagMarginAction, default="{},{}".format(round(layout.tagmarginx,3),round(layout.tagmarginy,3)),
+                        help='number of pixels of margin between tags (default: %(default)s)')
+    parser.add_argument('-tmx', '--tagmarginx', metavar='<pixels>', type=int,
+                        dest='tagmarginx', default=layout.tagmarginx,
+                        help='number of pixels of margin between tags (default: %(default)s)')
+    parser.add_argument('-tmy', '--tagmarginy', metavar='<pixels>', type=int,
+                        dest='tagmarginy', default=layout.tagmarginy,
                         help='number of pixels of margin between tags (default: %(default)s)')
     parser.add_argument('-r', '--rasterize',  
                         dest='rasterize', action='store_true',
