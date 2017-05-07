@@ -37,7 +37,8 @@ class Layout(object):
         '8.5x11': [215.9, 279.4],
         '11x8.5': [279.4, 215.9],
         '19x13':  [482.6, 330.2],
-        '13x19':  [330.2, 482.6]
+        '13x19':  [330.2, 482.6],
+        '12x18':  [304.8, 457.2]
         }
     # 13"x19" paper: Synaps OM 5-Mil paper
     # (corresponds to 12"x18" paper plus margin)
@@ -71,6 +72,7 @@ class Layout(object):
     self.fontsize_idext=5   # pix
     
     self.custom = None
+    self.removesvg = False
         
     # Notes:
     # Best printer:
@@ -135,7 +137,7 @@ class Layout(object):
     self.show_tag_cutkerf = False
     self.kerf_opacity = 1
     
-    self.show_footer = True
+    self.show_footer = False
     
     self.recompute_lengths()
   
@@ -330,12 +332,18 @@ class Generator(object):
     self.template = self.lookup.get_template(uri='template_tagsheet.svg')
     #template=Template(filename='mako_template_tagsheet.txt')
     
-  def generate(self,svg=None):
+  def generate(self,output=None):
+    if (output is None):
+        output=self.layout.output
+        
     if (self.layout.custom):
-        self.customsvg(svg)
+        self.customsvg(output)
     else:
-        self.generatesvg(svg)
-    self.topdf(svg)
+        self.generatesvg(output)
+    self.topdf(output)
+    
+    if (layout.removesvg):
+        os.remove(output)
     
   def getvars(self):
     self.layout.recompute_lengths()
@@ -652,6 +660,9 @@ if __name__ == "__main__":
     parser.add_argument('-tmy', '--tagmarginy', metavar='<pixels>', type=int,
                         dest='tagmarginy', default=layout.tagmarginy,
                         help='number of pixels of margin between tags (default: %(default)s)')
+    parser.add_argument('-rm', '--removesvg',  
+                        dest='removesvg', action='store_true',
+                        help='Delete tmp SVG file on success')
     parser.add_argument('-r', '--rasterize',  
                         dest='rasterize', action='store_true',
                         help='rasterize output PDF')

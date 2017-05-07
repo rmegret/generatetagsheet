@@ -129,16 +129,37 @@ python ../python/generatetagsheet.py -f tag25h5inv -p 5 -u 0 -v 3008 -bx 5 -by 7
 python ../python/generatetagsheet.py -f tag25h5inv -p 5 -u 0 -v 3008 -bx 5 -by 7 -d 10 -s 2 -o tagsheet_25h5inv_10dpp_color.svg -m=-2 -pz 13x19 -bm 5.08 -tm 10 -kt -ktx 40 -kty 430
 ```
 
-- Create tag25h5inv sheet for 8.5x11 paper:
+- Create tag25h5inv sheet for 8.5x11 paper: (May 6, 2017)
 ```
 python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0 -v 999 -bx 3 -by 4 -pz letter -bm 5.08 -tm 10 -kt -ktx 90 -kty 210 -sc -m=all -kf 0.2
 python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 1000 -v 1999 -bx 3 -by 4 -pz letter -bm 5.08 -tm 10 -kt -ktx 90 -kty 210 -sc -m=all -kf 0.2
 python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -bx 3 -by 4 -pz letter -bm 5.08 -tm 10 -kt -ktx 90 -kty 210 -sc -m=all -kf 0.2
+
+# No opening
+for kerf_mm in 0.2 0.4 0.6 0.8 1.0; do 
+   echo kerf=$kerf_mm; 
+   python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -bx 3 -by 4 -pz letter -bm 5.08 -tm 10 -kt -ktx 90 -kty 210 -sc -m=cuts -kf $kerf_mm -rm
+done
+
+# Opening x2
+for kerf_mm in 0.2 0.4 0.6 0.8 1.0; do 
+   echo kerf=$kerf_mm; 
+   python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -bx 3 -by 4 -pz letter -bm 5.08 -tm 10 -kt -ktx 90 -kty 210 -sc -m=cuts -kf $kerf_mm -ko 2 -rm
+done
 ```
 
-- Create tag25h5inv sheet for 19x13 paper:
+Office Depot Plaza Las Americas, May 6:
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0 -v 3008 -bx 5 -by 7 -pz 12x18 -bm 5.08 -tm 10,13 -kt -ktx 180 -kty 410 -sc -m=all -kf 0.2
+
+
+- Create tag25h5inv sheet for 19x13 paper: (May 6, 2017)
 ```
 python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0 -v 3008 -bx 5 -by 7 -pz 13x19 -bm 5.08 -tm 10,13 -kt -ktx 180 -kty 430 -sc -m=all -kf 0.2
+
+for kerf_mm in 0.2 0.4 0.6 0.8 1.0; do 
+   echo kerf=$kerf_mm; 
+   python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0 -v 3008 -bx 5 -by 7 -pz 13x19 -bm 5.08 -tm 10,13 -kt -ktx 180 -kty 430 -sc -m=cuts -kf $kerf_mm
+done
 ```
 
 ## Troubleshooting
