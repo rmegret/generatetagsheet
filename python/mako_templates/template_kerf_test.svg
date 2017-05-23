@@ -146,11 +146,12 @@
 <%
     # Note: at 10dpp, 200um=1pix wide
     #kerf_list = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
-    kerf_list = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]
-    opening_factor_list = [0, 1.5, 2, 2.5, 3]
+    #kerf_list = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]
+    kerf_list = [1, 1.1, 1.2, 0.9, 0.8]
+    opening_factor_list = [0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85,  0.9, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2]
   
-    ntagsx = len(kerf_list)
-    ntagsy = len(opening_factor_list)
+    ntagsx = len(opening_factor_list)
+    ntagsy = len(kerf_list)
     
     blocksize_x = ntagsx*step_x
     blocksize_y = ntagsy*step_y
@@ -253,11 +254,11 @@
     <%
     id=ix+ntagsx*iy
     
-    laserkerf_mm = kerf_list[ix]
+    laserkerf_mm = kerf_list[iy]
     laserkerf_pix=laserkerf_mm/pix2mm
     cutmargin_pix = laserkerf_pix/2
     
-    cut_opening_factor = opening_factor_list[iy]
+    cut_opening_factor = opening_factor_list[ix]
     
     cut_left=-tagmargin1_pix-cutmargin_pix
     cut_top=-tagmargin1_pix-cutmargin_pix-idheight_pix
