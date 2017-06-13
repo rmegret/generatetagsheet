@@ -65,6 +65,9 @@ class Layout(object):
     self.tagmarginx      = 5.0 # pix
     self.tagmarginy      = 5.0 # pix
     
+    self.test_patterns_x = 25.4
+    self.test_patterns_y = 25.4*6
+    
     self.title_fontsize=2.3 # 3mm normally
     self.block_fontsize=1.4 # 2mm normally
     self.fontfamily="Courier New"
@@ -97,8 +100,10 @@ class Layout(object):
     self.tagmargin1_pix = 1      # minimal outer border for contrast
     self.tagmargin2_pix = 3      # outer border extra
     self.idheight_pix=1        # Height of extra text for label
+    self.show_bitcode = False
     
     self.laserkerf_mm = 0.20
+    self.laserkerf_mm_view = 0 # 0 means copy from laserkerf_mm
     self.cutweight_inch = 0.0015  # Minimum for Epilog is 0.001
     self.cut_opening_factor = 0
     
@@ -111,14 +116,16 @@ class Layout(object):
     self.textcolor="black"
     self.arrowcolor="black"
     self.crosscolor="black"
-    self.tagid_bgcolor="#600060"
-    self.tagcornercolor1="#006060"
-    self.tagcornercolor2="#606000"
+    self.tagid_bgcolor="#C000C0"
+    self.tagcornercolor1="#00C000"
+    self.tagcornercolor2="#C0C000"
     self.show_colored_corners=False
     self.show_arrows=False
+    self.show_bicolor=False
 
     self.mode = 'tags'
     self.show_crosses = True
+    self.show_corner_crosses = False
     self.show_test_patterns = True
     self.show_kerftest = False
     self.kerftest_left = 40
@@ -208,6 +215,11 @@ class Layout(object):
     
     self.laserkerf_um=round(self.laserkerf_mm*1000)
     self.laserkerf_pix=self.laserkerf_mm/self.pix2mm
+    if (self.laserkerf_mm_view==0):
+        self.laserkerf_pix_view=self.laserkerf_pix
+    else:
+        self.laserkerf_pix_view=self.laserkerf_mm_view/self.pix2mm
+    
     self.cutmargin_pix = self.laserkerf_pix/2
     self.cut_opening_pix = self.cut_opening_factor*self.laserkerf_pix
     
@@ -264,7 +276,7 @@ class Layout(object):
       self.modestring = "CUTS"
     elif (mode=='view'): # Preview: Both tags and cuts
       self.show_tag = True
-      self.show_tag_img = False
+      self.show_tag_img = True
       self.show_tag_cut = True
       self.show_tag_cutkerf = True
       self.show_block_rect = True
@@ -580,125 +592,165 @@ if __name__ == "__main__":
     generator = Generator(layout)
 
     parser = argparse.ArgumentParser(description='Generate SVG tag sheet given a directory <tagdir> of tag images', formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--dpp', '-d', type=int,
-                        dest='tagdpp1200', default=layout.tagdpp1200,
-                        help='number of printer dots per pixel of the tag at 1200 dpi.\nFor 6 pixels code, dpp=8 -> 1.37mm, dpp=9 -> 1.54mm tag, dpp=10 -> 1.71mm tag')
-#     parser.add_argument('-o', '--output', metavar='<tagsheet-TAGS.svg>', 
-#                         dest='output', default=layout.output,
-#                         help='basename for output file (default: %(default)s)')
-    parser.add_argument('-ob', '--output_basename', metavar='<tagsheet>', 
-                        dest='output_basename', default=layout.output_basename,
-                        help='basename for output file (default: %(default)s)')
-    parser.add_argument('-f', '--family', metavar='<family>', 
-                        dest='family', default=layout.family,
-                        help='tag family name (default: %(default)s)')
-    parser.add_argument('-td', '--tagdir', metavar='<tagdir>', 
-                        dest='tagdir', default=layout.tagdir,
-                        help='directory containing tag image files (default: %(default)s)')
-    parser.add_argument('-tf', '--tagfiles', metavar='<tagfiles>', 
-                        dest='tagfiles', default=layout.tagfiles,
-                        help='pattern of tag image files, python format style (default: %(default)s)')
-    parser.add_argument('-p', '--tagcode_pix', metavar='<tagcode_pix>', 
-                      dest='tagcode_pix', default=layout.tagcode_pix, type=int,
-                      help='width of the code in pixels, without border (default: %(default)s)')
-    parser.add_argument('-u', '--first_id', metavar='<first_id>', type=int,
-                        dest='first_id', default=layout.first_id,
-                        help='first id, inclusive (default: %(default)s)')
-    parser.add_argument('-v', '--maxid', metavar='<max_id>', type=int,
-                        dest='maxid', default=layout.maxid,
-                        help='last id, inclusive (default: %(default)s)')
-    parser.add_argument('-s', '--style', metavar='<style>',
-                        dest='style', default=layout.style,
-                        help='color style: auto, tag, invtag, tagdebug, invdebug (default: %(default)s)')
-    parser.add_argument('-sc', '--show_colored_corners', action='store_true',
-                        dest='show_colored_corners', default=layout.show_colored_corners,
-                        help='Margin2 is colored (default: %(default)s)')
-    parser.add_argument('-sa', '--show_arrows', action='store_true',
-                        dest='show_arrows', default=layout.show_arrows,
-                        help='Margin2 show contrasting arrows (default: %(default)s)')
-    parser.add_argument('-m', '--mode', metavar='<mode>',
-                        dest='mode', default='tags',
-                        help='sheets to generate, as comma separated list: tags,cuts,view or all (default: %(default)s)')
-    parser.add_argument('-pz','--page_size', metavar='<size_name>', 
-                        dest='page_size', default=layout.page_size,
-                        help='page size (options: {}, default: %(default)s)'.format(list(layout.paper_sizes.keys()), layout.page_size))
-    parser.add_argument('-pw', '--page_w', metavar='<page_w>', type=float,
-                        dest='page_w', default=layout.page_w,
-                        action=CustomPageSizeAction,
-                        help='page width in mm (default: %(default)s)')
-    parser.add_argument('-ph', '--page_h', metavar='<page_h>', type=float,
-                        dest='page_w', default=layout.page_h,
-                        action=CustomPageSizeAction,
-                        help='page width in mm (default: %(default)s)')
-    parser.add_argument('-px', '--page_left', metavar='<page_left>', type=float,
-                        dest='page_left', default=layout.page_left,
-                        help='x0 of tags in mm (default: %(default)s)')
-    parser.add_argument('-py', '--page_top', metavar='<page_top>', type=float,
-                        dest='page_top', default=layout.page_top,
-                        help='y0 of tags in mm (default: %(default)s)')
-    parser.add_argument('-bx', '--nblocksx', metavar='<nblocksx>', type=int,
-                        dest='nblocksx', default=layout.nblocksx,
-                        help='number of tags in a block row (default: %(default)s)')
-    parser.add_argument('-by', '--nblocksy', metavar='<nblocksy>', type=int,
-                        dest='nblocksy', default=layout.nblocksy,
-                        help='number of tags in a block column (default: %(default)s)')
-    parser.add_argument('-bm', '--blockmargin', metavar='<mm>', type=float,
-                        dest='blockmargin', default=layout.nblocksy,
-                        help='margin between blocks (default: %(default)s)')
-    parser.add_argument('-nx', '--ntagsx', metavar='<ntagsx>', type=int,
-                        dest='ntagsx', default=layout.ntagsx,
-                        help='number of tags in a block row (default: %(default)s)')
-    parser.add_argument('-ny', '--ntagsy', metavar='<ntagsy>', type=int,
-                        dest='ntagsy', default=layout.ntagsy,
-                        help='number of tags in a block column (default: %(default)s)')
-    parser.add_argument('-tm', '--tagmargin', metavar='<mx,my> or <m>', 
-                        action=TagMarginAction, default="{},{}".format(round(layout.tagmarginx,3),round(layout.tagmarginy,3)),
-                        help='number of pixels of margin between tags (default: %(default)s)')
-    parser.add_argument('-tmx', '--tagmarginx', metavar='<pixels>', type=int,
-                        dest='tagmarginx', default=layout.tagmarginx,
-                        help='number of pixels of margin between tags (default: %(default)s)')
-    parser.add_argument('-tmy', '--tagmarginy', metavar='<pixels>', type=int,
-                        dest='tagmarginy', default=layout.tagmarginy,
-                        help='number of pixels of margin between tags (default: %(default)s)')
-    parser.add_argument('-rm', '--removesvg',  
-                        dest='removesvg', action='store_true',
-                        help='Delete tmp SVG file on success')
-    parser.add_argument('-r', '--rasterize',  
-                        dest='rasterize', action='store_true',
-                        help='rasterize output PDF')
-    parser.add_argument('-c', '--custom',  metavar='<layout name>',
-                        dest='custom', default=layout.custom,
-                        choices='custom_tag25h5,custom_tag25h6,custom_tag36h10,custom_tag25h6_dpp10,custom_test'.split(','),
-                        help='Use custom layout (hardcoded %(choices)s)')
-    parser.add_argument('-cx', '--axismargin_left', metavar='<marginleft>', 
-                        type=float,
-                        dest='axismargin_left', default=layout.axismargin_left,
-                        help='margin to center of cross (default: %(default)s)')
-    parser.add_argument('-cy', '--axismargin_top', metavar='<margintop>', 
-                        type=float,
-                        dest='axismargin_top', default=layout.axismargin_left,
-                        help='margin to center of cross (default: %(default)s)')
-    parser.add_argument('-kf', '--laserkerf_mm', metavar='<kerf in mm>', 
-                        type=float,
-                        dest='laserkerf_mm', default=layout.laserkerf_mm,
-                        help='thickness of laser in mm (default: %(default)s)')
-    parser.add_argument('-ko', '--cut_opening_factor', metavar='<factor>', 
-                        type=float,
-                        dest='cut_opening_factor', default=layout.cut_opening_factor,
-                        help='width of top opening as a factor of laserkerf_mm (default: %(default)s)')
-    parser.add_argument('-kt', '--show_kerftest', action='store_true',
-                        dest='show_kerftest', default=layout.show_kerftest,
-                        help='show kerf testpattern (default: %(default)s)')
-    parser.add_argument('-ktx', '--kerftest_left', type=float,
-                        dest='kerftest_left', default=layout.kerftest_left,
-                        help='left corner of kerf test pattern (default: %(default)s)')
-    parser.add_argument('-kty', '--kerftest_top', type=float,
-                        dest='kerftest_top', default=layout.kerftest_top,
-                        help='top corner of kerf test pattern (default: %(default)s)')
+    
     parser.add_argument('--verbose', metavar='<level>', 
                         type=int,
                         dest='verbose', default=1,
                         help='Verbosity level (default: %(default)s)')
+    
+    group = parser.add_argument_group('Input/Output')
+#     parser.add_argument('-o', '--output', metavar='<tagsheet-TAGS.svg>', 
+#                         dest='output', default=layout.output,
+#                         help='basename for output file (default: %(default)s)')
+    group.add_argument('-ob', '--output_basename', metavar='<tagsheet>', 
+                        dest='output_basename', default=layout.output_basename,
+                        help='basename for output file (default: %(default)s)')
+    group.add_argument('-m', '--mode', metavar='<mode>',
+                        dest='mode', default='tags',
+                        help='sheets to generate, as comma separated list: tags,cuts,view or all (default: %(default)s)')
+    group.add_argument('-rm', '--removesvg',  
+                        dest='removesvg', action='store_true',
+                        help='Delete tmp SVG file on success')
+    group.add_argument('-r', '--rasterize',  
+                        dest='rasterize', action='store_true',
+                        help='rasterize output PDF')
+                        
+    group = parser.add_argument_group('Tag family info')
+    group.add_argument('-f', '--family', metavar='<family>', 
+                        dest='family', default=layout.family,
+                        help='tag family name (default: %(default)s)')
+    group.add_argument('-td', '--tagdir', metavar='<tagdir>', 
+                        dest='tagdir', default=layout.tagdir,
+                        help='directory containing tag image files (default: %(default)s)')
+    group.add_argument('-tf', '--tagfiles', metavar='<tagfiles>', 
+                        dest='tagfiles', default=layout.tagfiles,
+                        help='pattern of tag image files, python format style (default: %(default)s)')
+    group.add_argument('-p', '--tagcode_pix', metavar='<tagcode_pix>', 
+                      dest='tagcode_pix', default=layout.tagcode_pix, type=int,
+                      help='width of the code in pixels, without border (default: %(default)s)')
+    group.add_argument('-u', '--first_id', metavar='<first_id>', type=int,
+                        dest='first_id', default=layout.first_id,
+                        help='first id, inclusive (default: %(default)s)')
+    group.add_argument('-v', '--maxid', metavar='<max_id>', type=int,
+                        dest='maxid', default=layout.maxid,
+                        help='last id, inclusive (default: %(default)s)')
+
+    group = parser.add_argument_group('Style')
+    group.add_argument('-s', '--style', metavar='<style>',
+                        dest='style', default=layout.style,
+                        help='color style: auto, tag, invtag, tagdebug, invdebug (default: %(default)s)')
+    group.add_argument('-sc', '--show_colored_corners', action='store_true',
+                        dest='show_colored_corners', default=layout.show_colored_corners,
+                        help='Margin2 is colored (default: %(default)s)')
+    group.add_argument('-sa', '--show_arrows', action='store_true',
+                        dest='show_arrows', default=layout.show_arrows,
+                        help='Margin2 show contrasting arrows (default: %(default)s)')
+    group.add_argument('-sb', '--show_bicolor', action='store_true',
+                        dest='show_bicolor', default=layout.show_bicolor,
+                        help='Top/Bottom bicolors (default: %(default)s)')
+    group.add_argument('-col0', '--tagid_bgcolor', 
+                        dest='tagid_bgcolor', default=layout.tagid_bgcolor,
+                        help='tag id color (default: %(default)s)')
+    group.add_argument('-col1', '--tagcornercolor1', 
+                        dest='tagcornercolor1', default=layout.tagcornercolor1,
+                        help='tag color 1(default: %(default)s)')
+    group.add_argument('-col2', '--tagcornercolor2', 
+                        dest='tagcornercolor2', default=layout.tagcornercolor2,
+                        help='tag color 2 (default: %(default)s)')
+    group.add_argument('-sbc', '--show_bitcode', action='store_true',
+                        dest='show_bitcode', default=layout.show_bitcode,
+                        help='Show color bitcode instead of id (default: %(default)s)')
+                        
+    group = parser.add_argument_group('Geometry')
+    group.add_argument('--dpp', '-d', type=int,
+                        dest='tagdpp1200', default=layout.tagdpp1200,
+                        help='number of printer dots per pixel of the tag at 1200 dpi.\nFor 6 pixels code, dpp=8 -> 1.37mm, dpp=9 -> 1.54mm tag, dpp=10 -> 1.71mm tag')
+    group.add_argument('-c', '--custom',  metavar='<layout name>',
+                        dest='custom', default=layout.custom,
+                        choices='custom_tag25h5,custom_tag25h6,custom_tag36h10,custom_tag25h6_dpp10,custom_test'.split(','),
+                        help='Use custom layout (hardcoded %(choices)s)')
+    group.add_argument('-pz','--page_size', metavar='<size_name>', 
+                        dest='page_size', default=layout.page_size,
+                        help='page size (options: {}, default: %(default)s)'.format(list(layout.paper_sizes.keys()), layout.page_size))
+    group.add_argument('-pw', '--page_w', metavar='<page_w>', type=float,
+                        dest='page_w', default=layout.page_w,
+                        action=CustomPageSizeAction,
+                        help='page width in mm (default: %(default)s)')
+    group.add_argument('-ph', '--page_h', metavar='<page_h>', type=float,
+                        dest='page_w', default=layout.page_h,
+                        action=CustomPageSizeAction,
+                        help='page width in mm (default: %(default)s)')
+    group.add_argument('-px', '--page_left', metavar='<page_left>', type=float,
+                        dest='page_left', default=layout.page_left,
+                        help='x0 of tags in mm (default: %(default)s)')
+    group.add_argument('-py', '--page_top', metavar='<page_top>', type=float,
+                        dest='page_top', default=layout.page_top,
+                        help='y0 of tags in mm (default: %(default)s)')
+    group.add_argument('-bx', '--nblocksx', metavar='<nblocksx>', type=int,
+                        dest='nblocksx', default=layout.nblocksx,
+                        help='number of tags in a block row (default: %(default)s)')
+    group.add_argument('-by', '--nblocksy', metavar='<nblocksy>', type=int,
+                        dest='nblocksy', default=layout.nblocksy,
+                        help='number of tags in a block column (default: %(default)s)')
+    group.add_argument('-bm', '--blockmargin', metavar='<mm>', type=float,
+                        dest='blockmargin', default=layout.nblocksy,
+                        help='margin between blocks (default: %(default)s)')
+    group.add_argument('-nx', '--ntagsx', metavar='<ntagsx>', type=int,
+                        dest='ntagsx', default=layout.ntagsx,
+                        help='number of tags in a block row (default: %(default)s)')
+    group.add_argument('-ny', '--ntagsy', metavar='<ntagsy>', type=int,
+                        dest='ntagsy', default=layout.ntagsy,
+                        help='number of tags in a block column (default: %(default)s)')
+    group.add_argument('-tm', '--tagmargin', metavar='<mx,my> or <m>', 
+                        action=TagMarginAction, default="{},{}".format(round(layout.tagmarginx,3),round(layout.tagmarginy,3)),
+                        help='number of pixels of margin between tags (default: %(default)s)')
+    group.add_argument('-tmx', '--tagmarginx', metavar='<pixels>', type=int,
+                        dest='tagmarginx', default=layout.tagmarginx,
+                        help='number of pixels of margin between tags (default: %(default)s)')
+    group.add_argument('-tmy', '--tagmarginy', metavar='<pixels>', type=int,
+                        dest='tagmarginy', default=layout.tagmarginy,
+                        help='number of pixels of margin between tags (default: %(default)s)')
+    group.add_argument('-cx', '--axismargin_left', metavar='<marginleft>', 
+                        type=float,
+                        dest='axismargin_left', default=layout.axismargin_left,
+                        help='margin to center of cross (default: %(default)s)')
+    group.add_argument('-cy', '--axismargin_top', metavar='<margintop>', 
+                        type=float,
+                        dest='axismargin_top', default=layout.axismargin_left,
+                        help='margin to center of cross (default: %(default)s)')
+    group.add_argument('-tp', '--show_test_patterns', action='store_true',
+                        dest='show_test_patterns', default=layout.show_kerftest,
+                        help='show Siemens star patterns (default: %(default)s)')
+    group.add_argument('-tpx', '--test_patterns_x', type=float,
+                        dest='test_patterns_x', default=layout.kerftest_left,
+                        help='left corner of Siemens test pattern (default: %(default)s)')
+    group.add_argument('-tpy', '--test_patterns_y', type=float,
+                        dest='test_patterns_y', default=layout.kerftest_top,
+                        help='top corner of Siemens test pattern (default: %(default)s)')
+                        
+    group = parser.add_argument_group('Lasercutting')
+    group.add_argument('-kf', '--laserkerf_mm', metavar='<kerf in mm>', 
+                        type=float,
+                        dest='laserkerf_mm', default=layout.laserkerf_mm,
+                        help='thickness of laser in mm (default: %(default)s)')
+    group.add_argument('-kfv', '--laserkerf_mm_view', metavar='<kerf in mm>', 
+                        type=float,
+                        dest='laserkerf_mm_view', default=layout.laserkerf_mm_view,
+                        help='thickness of laser in mm for the view only. 0 to copy from -kf (default: %(default)s)')
+    group.add_argument('-ko', '--cut_opening_factor', metavar='<factor>', 
+                        type=float,
+                        dest='cut_opening_factor', default=layout.cut_opening_factor,
+                        help='width of top opening as a factor of laserkerf_mm (default: %(default)s)')
+    group.add_argument('-kt', '--show_kerftest', action='store_true',
+                        dest='show_kerftest', default=layout.show_kerftest,
+                        help='show kerf testpattern (default: %(default)s)')
+    group.add_argument('-ktx', '--kerftest_left', type=float,
+                        dest='kerftest_left', default=layout.kerftest_left,
+                        help='left corner of kerf test pattern (default: %(default)s)')
+    group.add_argument('-kty', '--kerftest_top', type=float,
+                        dest='kerftest_top', default=layout.kerftest_top,
+                        help='top corner of kerf test pattern (default: %(default)s)')
+                        
     args = parser.parse_args()    
     fields=sorted(vars(args).keys())
     for field in fields:

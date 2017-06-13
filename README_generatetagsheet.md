@@ -166,6 +166,66 @@ for kerf_mm in 0.2 0.4 0.6 0.8 1.0; do
 done
 ```
 
+- Create tag25h5inv cut sheet for 8.5x11 paper: (May 9, 2017)
+
+kerf_mm=1.2
+opening 
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0 -v 999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 210 -kf 1.2 -ko 0.5 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 90 -tpy 250 -m=tags -col0 '#c00000' -col1 '#008080' -sb
+
+# redcode:
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0 -v 999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 210 -kf 1.2 -ko 0.5 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 90 -tpy 250 -m=tags -col0 '#a00' -col1 '#088' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}_redcode' -sbc
+
+# bluecode:
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0 -v 999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 210 -kf 1.2 -ko 0.5 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 90 -tpy 250 -m=tags -col0 '#00a' -col1 '#880' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}_bluecode' -sbc
+
+# blackcode
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 1.2 -ko 0.5 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=tags -col0 '#fff' -col1 '#000' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}_blackcode' -sbc -rm
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 1000 -v 1999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 1.2 -ko 0.5 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=tags -col0 '#fff' -col1 '#000' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}_blackcode' -sbc -rm
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 1.2 -ko 0.5 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=tags,cuts -col0 '#fff' -col1 '#000' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}_blackcode' -sbc -rm
+
+# bluecode
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 1.2 -ko 0.5 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 90 -tpy 250 -m=tags -col0 '#ff4' -col1 '#00a' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}_bluecode' -sbc
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 1000 -v 1999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 1.2 -ko 0.5 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 90 -tpy 250 -m=tags -col0 '#ff4' -col1 '#00a' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}_bluecode' -sbc
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 1.2 -ko 0.5 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=tags,cuts -col0 '#ff4' -col1 '#00a' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}_bluecode' -sbc
+
+
+# cyancode
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 1.2 -ko 0.5 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=tags -col0 '#aff' -col1 '#a00' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}_cyancode' -sbc -rm
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 1000 -v 1999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 1.2 -ko 0.5 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=tags -col0 '#aff' -col1 '#a00' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}_cyancode' -sbc -rm
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 1.2 -ko 0.5 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=tags,cuts -col0 '#aff' -col1 '#a00' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}_cyancode' -sbc -rm
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 1.2 -ko 0.5 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=view -col0 '#aff' -col1 '#a00' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}_cyancode' -sbc -kfv 0.5 -rm
+
+# nocode
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 1.2 -ko 0.5 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=tags -col0 '#000' -col1 '#fff' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}' -rm
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 1000 -v 1999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 1.2 -ko 0.5 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=tags -col0 '#000' -col1 '#fff' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}' -rm
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 1.2 -ko 0.5 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=tags,cuts -col0 '#000' -col1 '#fff' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}' -rm
+
+# Correction -0.15mm inside
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.9 -kfv 0.45 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=cuts,view -col0 '#aff' -col1 '#a00' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}' -sbc -rm
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 1.0 -kfv 0.45 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=cuts,view -col0 '#aff' -col1 '#a00' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}' -sbc -rm
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.8 -kfv 0.45 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=cuts,view -col0 '#aff' -col1 '#a00' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}' -sbc -rm
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.95 -kfv 0.45 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=cuts,view -col0 '#aff' -col1 '#a00' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}' -sbc -rm
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 1.05 -kfv 0.45 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=cuts,view -col0 '#aff' -col1 '#a00' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}' -sbc -rm
+
+# Second correction
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -kfv 0.45 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=cuts,view -col0 '#aff' -col1 '#a00' -sb -ob '{family}_dpp{tagdpp1200}_{page_size}_{first_id}-{last_id}' -sbc -rm
+
+
 ## Troubleshooting
 
 - Error

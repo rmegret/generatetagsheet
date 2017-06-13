@@ -53,7 +53,7 @@
   </g>
   <g id="crosscut">
     <g class="cross">
-        <path d="M -2 0 L 2 0 M 0 -2 L 0 2" fill="none" stroke="#0F0" stroke-width="0.03"/>
+        <path d="M -0.5 0 L 0.5 0 M 0 -0.5 L 0 0.5" fill="none" stroke="#0F0" stroke-width="0.03"/>
     </g>
   </g>
   
@@ -99,6 +99,56 @@
      <%include file="template_siemensstar.svg" args="ppi=75"/>
   </g>
   </g> <!-- Test pattern -->
+  
+  
+  <g id="testpattern2">
+      <g transform="translate(0,0)">
+        <% s=25.4/1200 %>
+        <text text-anchor="middle" dominant-baseline="alphabetic" dy="-1"
+                      font-family="Helvetica" font-size="1"
+                      fill="#000000" xml:space="preserve">1200ppi</text>
+        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(-22,0)"/>
+        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(2.5,0.5)"/>
+      </g>
+      <g transform="translate(${halfinch*0.5},0)">
+        <% s=25.4/600 %>
+        <text text-anchor="middle" dominant-baseline="alphabetic" dy="-1"
+                      font-family="Helvetica" font-size="1"
+                      fill="#000000" xml:space="preserve">600ppi</text>
+        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(-22,0)"/>
+        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(2.5,0.5)"/>
+      </g>
+      <g transform="translate(${halfinch*1},0)">
+        <% s=25.4/300 %>
+        <text text-anchor="middle" dominant-baseline="alphabetic" dy="-1"
+                      font-family="Helvetica" font-size="1"
+                      fill="#000000" xml:space="preserve">300ppi</text>
+        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(-22,0)"/>
+        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(2.5,0.5)"/>
+      </g>
+      <g transform="translate(${halfinch*1.75},0)">
+        <% s=25.4/150 %>
+        <text text-anchor="middle" dominant-baseline="alphabetic" dy="-1"
+                      font-family="Helvetica" font-size="1"
+                      fill="#000000" xml:space="preserve">150ppi</text>
+        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(-22,0)"/>
+        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(2.5,0.5)"/>
+      </g>
+      <g transform="translate(${halfinch*3},0)">
+        <% s=pix2mm %>
+        <text text-anchor="middle" dominant-baseline="alphabetic" dy="-1"
+                      font-family="Helvetica" font-size="1"
+                      fill="#000000" xml:space="preserve">tag: ${"{:.1f}".format(25.4/pix2mm)}ppi</text>
+        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(-22,0)"/>
+        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(2.5,0.5)"/>
+      </g>
+      <g transform="translate(${halfinch*4.5},${halfinch/2})">
+         <%include file="template_siemensstar.svg" args="ppi=150"/>
+      </g>
+      <g transform="translate(${halfinch*6},${halfinch/2})">
+         <%include file="template_siemensstar.svg" args="ppi=75"/>
+      </g>
+  </g> <!-- Test pattern 2 -->
 </defs>
 
 <g id="topgroup">
@@ -113,20 +163,11 @@
 %>
 
 <g id="alignmentCrosses">
-%if show_crosses:
+%if show_corner_crosses:
   <use xlink:href="#cross" transform="translate(${x0},${y0})"/>
   <use xlink:href="#cross" transform="translate(${x1},${y0}) scale(-1,1)"/>
   <use xlink:href="#cross" transform="translate(${x1},${y1}) scale(-1,-1)"/>
   <use xlink:href="#cross" transform="translate(${x0},${y1}) scale(1,-1)"/>
-  
-  <use xlink:href="#crossbasic" transform="translate(${0.25*inch},${y0})"/>
-  <use xlink:href="#crossbasic" transform="translate(${0.50*inch},${y0})"/>
-  <use xlink:href="#crossbasic" transform="translate(${x0},${0.25*inch})"/>
-  <use xlink:href="#crossbasic" transform="translate(${x0},${0.50*inch})"/>
-  <use xlink:href="#crossbasic" transform="translate(${page_w-0.25*inch},${y1})"/>
-  <use xlink:href="#crossbasic" transform="translate(${page_w-0.50*inch},${y1})"/>
-  <use xlink:href="#crossbasic" transform="translate(${x1},${page_h-0.25*inch})"/>
-  <use xlink:href="#crossbasic" transform="translate(${x1},${page_h-0.50*inch})"/>
 %endif
   
 %if show_tag_cut:
@@ -140,10 +181,12 @@
 %if show_test_patterns:
 <g class="testPatterns">
   <%
-  testpattern_cx = halfinch
-  testpattern_y0 = halfinch*6
+  #testpattern_cx = halfinch
+  #testpattern_y0 = halfinch*6
+  testpattern_cx = apply_hint_mm(test_patterns_x,50)
+  testpattern_y0 = apply_hint_mm(test_patterns_y,50)
   %>
-  <use xlink:href="#testpattern" transform="translate(${testpattern_cx},${testpattern_y0})"/>
+  <use xlink:href="#testpattern2" transform="translate(${testpattern_cx},${testpattern_y0})"/>
 </g>
 <!-- 
 <g class="testPatterns">  

@@ -13,7 +13,7 @@
 <%
   tit_left=page_left+12
   tit_center=page_left+pagesize_x/2
-  tit_top=page_top-5
+  tit_top=page_top-7
 %>
 
 % if show_page_title:
@@ -74,10 +74,22 @@
 <%def name="putCross(crossx,crossy)">
   <g transform="translate(${crossx},${crossy})">
     %if show_crosses:
-    <path d="M -1.5 0 L 1.5 0 M 0 -1.5 L 0 1.5" fill="none" stroke="${crosscolor}" stroke-width="0.04"/>
+    <path d="M -2 0 L 2 0 M 0 -2 L 0 2" fill="none" stroke="${crosscolor}" stroke-width="0.04"/>
     %endif
     %if show_tag_cut:
-    <path d="M -1 0 L 1 0 M 0 -1 L 0 1" fill="none" stroke="#0F0" stroke-width="0.03"/>
+    <path d="M -0.5 0 L 0.5 0 M 0 -0.5 L 0 0.5" fill="none" stroke="#0F0" stroke-width="0.03"/>
+    %endif
+  </g>
+</%def>
+
+<%def name="putMarker(px,py)">
+  <g transform="translate(${px},${py})">
+    %if show_crosses:
+    <circle cx="0" cy="0" r="1" fill="black" stroke="none"/>
+    %endif
+    %if show_tag_cut:
+    <path d="M -0.5 0 L 0.5 0 M 0 -0.5 L 0 0.5" fill="none" stroke="#0F0" stroke-width="0.03"/>
+    <circle cx="0" cy="0" r="1" fill="none" stroke="#0FF" stroke-width="0.03"/>
     %endif
   </g>
 </%def>
@@ -87,12 +99,18 @@
 %endif
 %if (iix==0):
     ${putCross(block_cross_x, block_cross_y+blockstep_y)}
+   ## ${putMarker(block_cross_x, block_cross_y+blockstep_y/2)}
 %endif
 %if (iiy==0):
     ${putCross(block_cross_x+blockstep_x, block_cross_y)}
+    ${putMarker(block_cross_x+step_x, block_cross_y)}
+    ${putMarker(block_cross_x+blockstep_x-step_x, block_cross_y)}
 %endif
 %if block_is_visible:
   ${putCross(block_cross_x+blockstep_x, block_cross_y+blockstep_y)}
+   ${putMarker(block_cross_x+step_x, block_cross_y+blockstep_y)}
+   ${putMarker(block_cross_x+blockstep_x-step_x, block_cross_y+blockstep_y)}
+  ##${putMarker(block_cross_x+blockstep_x, block_cross_y+blockstep_y/2)}
 %endif
 
   %endfor
