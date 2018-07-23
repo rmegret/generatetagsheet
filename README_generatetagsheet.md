@@ -58,6 +58,12 @@ or using script
     dir_png2svg.sh png svg
 ```
 
+Do it with some white border to balance white/black pixels
+
+```
+for f in *.svg; do sed 's/stroke="none"/stroke="red" stroke-width="0.3"/' $f > ../svg-3w/$f; done
+```
+
 
 3. Create main SVG sheet
 
@@ -232,4 +238,39 @@ python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 3008 -b
 `mako.exceptions.CompileException: Unicode decode operation of encoding 'ascii' failed in file '../python/mako_templates/template_closing.svg' at line: 0 char: 0`
 
   Due to template not saved at UTF8 with BOM
-  
+
+
+## New tags for Argentina
+
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=all -col0 '#fff' -col1 '#000' -tc '#000' -b1sw 0.2 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_blacktext' -rm -kfv 0.2
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 1000 -v 1999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=all -col0 '#fff' -col1 '#000' -tc '#000' -b1sw 0.2 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_blacktext' -rm -kfv 0.2  
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=all -col0 '#fff' -col1 '#000' -tc '#000' -b1sw 0.2 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_blacktext' -rm -kfv 0.2
+
+
+## New tags with white border
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=all -col0 '#fff' -col1 '#000' -tc '#000' -b1sw 0.3 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_blacktext3w' -rm -kfv 0.2 -td '{family}/svg-3w' -tim 0.3
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 1000 -v 1999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=all -col0 '#fff' -col1 '#000' -tc '#000' -b1sw 0.3 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_blacktext3w' -rm -kfv 0.2 -td '{family}/svg-3w' -tim 0.3
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=all -col0 '#fff' -col1 '#000' -tc '#000' -b1sw 0.3 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_blacktext3w' -rm -kfv 0.2 -td '{family}/svg-3w' -tim 0.3
+
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=all -col0 '#fff' -col1 '#000' -tc '#000' -b1sw 0.3 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_blacktext' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 1000 -v 1999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=all -col0 '#fff' -col1 '#000' -tc '#000' -b1sw 0.3 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_blacktext' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=all -col0 '#fff' -col1 '#000' -tc '#000' -b1sw 0.3 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_blacktext' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3
+
+
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=all -col0 '#000' -col1 '#fff' -tc '#fff' -b1sw 0.3 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_blacktext2' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 1000 -v 1999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=all -col0 '#000' -col1 '#fff' -tc '#fff' -b1sw 0.3 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_blacktext2' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=all -col0 '#000' -col1 '#fff' -tc '#fff' -b1sw 0.3 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_blacktext2' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3
+
+

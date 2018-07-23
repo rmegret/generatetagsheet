@@ -70,9 +70,11 @@ class Layout(object):
     
     self.title_fontsize=2.3 # 3mm normally
     self.block_fontsize=1.4 # 2mm normally
-    self.fontfamily="Courier New"
-    self.fontsize_id=2      # pix
+    self.fontfamily="Courier"
+    self.fontsize_id=1.5      # pix
     self.fontsize_idext=5   # pix
+    self.fontsize_scalex=2.0   # factor
+    self.tagid_margin=0.2
     
     self.custom = None
     self.removesvg = False
@@ -113,6 +115,8 @@ class Layout(object):
     self.tagbgcolor="white"
     self.border1color="white"
     self.border2color="white"
+    self.border1stroke="white"
+    self.border1strokewidth=0.1
     self.textcolor="black"
     self.arrowcolor="black"
     self.crosscolor="black"
@@ -173,25 +177,29 @@ class Layout(object):
         self.tagbgcolor="white"
         self.border1color="white"
         self.border2color="white"
-        self.textcolor="black"
+        self.border1stroke="white"
+        #self.textcolor="black"
         self.arrowcolor="black"
     elif (self.style1=='tagdebug'):
         self.tagbgcolor="lightyellow"
         self.border1color="lightcyan"
         self.border2color="lightskyblue"
-        self.textcolor="black"
+        self.border1stroke="white"
+        #self.textcolor="black"
         self.arrowcolor="darkred"
     elif (self.style1=='invtag'):
         self.tagbgcolor="white"
         self.border1color="black"
         self.border2color="black"
-        self.textcolor="white"
+        self.border1stroke="white"
+        #self.textcolor="white"
         self.arrowcolor="white"
     elif (self.style1=='invtagdebug'):
         self.tagbgcolor="#DFD"
         self.border1color="darkblue"
         self.border2color="mediumblue"
-        self.textcolor="white"
+        self.border1stroke="white"
+        #self.textcolor="white"
         self.arrowcolor="lightcyan"
     else:
         print('ERROR: Unknown style={}'.format(self.style1))
@@ -586,12 +594,17 @@ class TagMarginAction(argparse.Action):
         
         print('--tagmargin: set to {},{}'.format(tagmarginx,tagmarginy))
 
+class MyArgumentParser(argparse.ArgumentParser):
+    def convert_arg_line_to_args(self, arg_line):
+        return arg_line.split()
+
 if __name__ == "__main__":
 
     layout = Layout()
     generator = Generator(layout)
 
     parser = argparse.ArgumentParser(description='Generate SVG tag sheet given a directory <tagdir> of tag images', formatter_class=argparse.RawDescriptionHelpFormatter)
+#    ,fromfile_prefix_chars='@', convert_arg_line_to_args=MyArgumentParser)
     
     parser.add_argument('--verbose', metavar='<level>', 
                         type=int,
@@ -660,6 +673,21 @@ if __name__ == "__main__":
     group.add_argument('-sbc', '--show_bitcode', action='store_true',
                         dest='show_bitcode', default=layout.show_bitcode,
                         help='Show color bitcode instead of id (default: %(default)s)')
+    group.add_argument('-b1sw', '--border1strokewidth', type=float,
+                        dest='border1strokewidth', default=layout.border1strokewidth,
+                        help='Thickness of border stroke in tag pixels (default: %(default)s)')
+    group.add_argument('-tc', '--textcolor',
+                        dest='textcolor', default=layout.textcolor,
+                        help='Color of tag ID text (default: %(default)s)')
+    group.add_argument('-ff', '--fontfamily',
+                        dest='fontfamily', default=layout.fontfamily,
+                        help='Font family for tag ID text (default: %(default)s)')
+    group.add_argument('-fsi', '--fontsize_id',
+                        dest='fontsize_id', default=layout.fontsize_id,
+                        help='Tag ID fontsize in tag pixels (default: %(default)s)')
+    group.add_argument('-fsx', '--fontsize_scalex',
+                        dest='fontsize_scalex', default=layout.fontsize_scalex,
+                        help='X scale for tag ID (default: %(default)s)')
                         
     group = parser.add_argument_group('Geometry')
     group.add_argument('--dpp', '-d', type=int,
@@ -710,6 +738,10 @@ if __name__ == "__main__":
     group.add_argument('-tmy', '--tagmarginy', metavar='<pixels>', type=int,
                         dest='tagmarginy', default=layout.tagmarginy,
                         help='number of pixels of margin between tags (default: %(default)s)')
+    group.add_argument('-tim', '--tagid_margin', metavar='<pixels>', type=float,
+                        dest='tagid_margin', default=layout.tagid_margin,
+                        help='number of pixels between tag id text and tag (default: %(default)s)')
+                                                
     group.add_argument('-cx', '--axismargin_left', metavar='<marginleft>', 
                         type=float,
                         dest='axismargin_left', default=layout.axismargin_left,

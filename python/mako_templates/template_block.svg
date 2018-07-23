@@ -169,6 +169,11 @@
         <rect x="-${tagmargin1_pix}" y="-${tagmargin1_pix}" 
               width="${tagsize1_pix}" height="${tagsize1_pix}" 
               rx="${tagmargin1_pix}" ry="${tagmargin1_pix}" 
+              fill="none" 
+              stroke="${border1stroke}" stroke-width="${border1strokewidth*2}"/>
+        <rect x="-${tagmargin1_pix}" y="-${tagmargin1_pix}" 
+              width="${tagsize1_pix}" height="${tagsize1_pix}" 
+              rx="${tagmargin1_pix}" ry="${tagmargin1_pix}" 
               fill="${border1color}" stroke="none"/>
               
         <!-- Tag background rectangle -->
@@ -297,9 +302,13 @@
         %if show_bitcode:
         ${bitcode(id,tagsize_pix,1,-2,5.0/5,1)}
         %else:
-        <text class="tagvalue" x="${cx}" y="${-tagmargin1_pix-0.1}" text-anchor="middle" 
-              font-family="${fontfamily}" font-weight="900" font-size="${fontsize_id}" 
+        <g transform="translate(${cx},${-tagmargin1_pix-tagid_margin})" >
+<!--         <text class="tagvalue" x="${cx}" y="${-tagmargin1_pix-0.1}" text-anchor="middle"  -->
+          <text class="tagvalue" text-anchor="middle"
+              font-family="${fontfamily}" transform="scale(${fontsize_scalex},1)" 
+              font-weight="900" font-size="${fontsize_id}" 
               fill="${textcolor}">${id}</text>
+        </g>
         %endif
               
         %if show_tag_img:
