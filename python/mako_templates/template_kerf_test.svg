@@ -70,12 +70,10 @@
 %>
 <defs>
   <g id="arrow_${blockid}">
-      <path d="M 0,0 l -${arrowlen} -${arrowwidth} l 0 ${arrowwidth} Z" fill="${arrowcolor}" stroke="none"/>
-<!--       <path d="M 0,0  l -${arrowlen} ${arrowwidth} l 0 -${arrowwidth*2} Z" fill="#red" stroke="none" transform="translate(-${arrowshift},0) scale(${(arrowlen-arrowshift)/arrowlen})"/> -->
+      <path d="M 0,0 l ${-arrowlen} ${-arrowwidth} l 0 ${arrowwidth} Z" fill="${arrowcolor}" stroke="none"/>
   </g>
   <g id="arrow2_${blockid}">
-      <path d="M 0,0 l -${arrowlen-1} ${arrowwidth} l 0 -${arrowwidth*2} Z" fill="${arrowcolor}" stroke="none"/>
-<!--       <path d="M 0,0  l -${arrowlen-1} ${arrowwidth} l 0 -${arrowwidth*2} Z" fill="#red" stroke="none" transform="translate(-${arrowshift},0) scale(${(arrowlen-1-arrowshift)/(arrowlen-1)})"/> -->
+      <path d="M 0,0 l ${-(arrowlen-1)} ${arrowwidth} l 0 ${-arrowwidth*2} Z" fill="${arrowcolor}" stroke="none"/>
   </g>
   <g id="bg_${blockid}">
       <g class="tagbg">

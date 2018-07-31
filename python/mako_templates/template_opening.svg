@@ -101,54 +101,116 @@
   </g> <!-- Test pattern -->
   
   
+  <%def name="pat2(ppi)">
+  <% s=25.4/ppi %>
+        <text text-anchor="middle" dominant-baseline="alphabetic" dy="-0.5"
+                      font-family="Helvetica" font-size="0.8"
+                      fill="#000000" xml:space="preserve">${ppi}ppi</text>
+        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(-22,0)"/>
+        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(2.5,0.5)"/>
+  </%def>
+  
   <g id="testpattern2">
-      <g transform="translate(0,0)">
-        <% s=25.4/1200 %>
-        <text text-anchor="middle" dominant-baseline="alphabetic" dy="-1"
-                      font-family="Helvetica" font-size="1"
-                      fill="#000000" xml:space="preserve">1200ppi</text>
-        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(-22,0)"/>
-        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(2.5,0.5)"/>
+      <g transform="translate(${halfinch*0},0)">
+        ${pat2(1200)}
       </g>
-      <g transform="translate(${halfinch*0.5},0)">
-        <% s=25.4/600 %>
-        <text text-anchor="middle" dominant-baseline="alphabetic" dy="-1"
-                      font-family="Helvetica" font-size="1"
-                      fill="#000000" xml:space="preserve">600ppi</text>
-        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(-22,0)"/>
-        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(2.5,0.5)"/>
+      <g transform="translate(${halfinch*0},${halfinch*0.625})">
+        ${pat2(1219.2)}
       </g>
-      <g transform="translate(${halfinch*1},0)">
-        <% s=25.4/300 %>
-        <text text-anchor="middle" dominant-baseline="alphabetic" dy="-1"
-                      font-family="Helvetica" font-size="1"
-                      fill="#000000" xml:space="preserve">300ppi</text>
-        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(-22,0)"/>
-        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(2.5,0.5)"/>
+      <g transform="translate(${halfinch*0.25},0)">
+        ${pat2(600)}
       </g>
-      <g transform="translate(${halfinch*1.75},0)">
-        <% s=25.4/150 %>
-        <text text-anchor="middle" dominant-baseline="alphabetic" dy="-1"
-                      font-family="Helvetica" font-size="1"
-                      fill="#000000" xml:space="preserve">150ppi</text>
-        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(-22,0)"/>
-        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(2.5,0.5)"/>
+      <g transform="translate(${halfinch*0.25},${halfinch*0.625})">
+        ${pat2(1219.2/2.0)}
       </g>
-      <g transform="translate(${halfinch*3},0)">
-        <% s=pix2mm %>
-        <text text-anchor="middle" dominant-baseline="alphabetic" dy="-1"
-                      font-family="Helvetica" font-size="1"
-                      fill="#000000" xml:space="preserve">tag: ${"{:.1f}".format(25.4/pix2mm)}ppi</text>
-        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(-22,0)"/>
-        <use xlink:href="#checkers" transform="scale(${s},${s}) translate(2.5,0.5)"/>
+      <g transform="translate(${halfinch*0.625},0)">
+        ${pat2(300)}
       </g>
-      <g transform="translate(${halfinch*4.5},${halfinch/2})">
+      <g transform="translate(${halfinch*0.625},${halfinch*0.625})">
+        ${pat2(1219.2/4)}
+      </g>
+      <g transform="translate(${halfinch*1.25},0)">
+        ${pat2(150)}
+      </g>
+      <g transform="translate(${halfinch*2.00},0)">
+        ${pat2(1219.2/8.0)}
+      </g>
+      <g transform="translate(${halfinch*2.875},0)">
+        ${pat2(1200/tagdpp1200)}
+      </g>
+      <g transform="translate(${halfinch*3.75},0)">
+        ${pat2(1219.2/tagdpp1200)}
+      </g>
+      <g transform="translate(${halfinch*5},${halfinch/2})">
          <%include file="template_siemensstar.svg" args="ppi=150"/>
       </g>
-      <g transform="translate(${halfinch*6},${halfinch/2})">
+      <g transform="translate(${halfinch*6.25},${halfinch/2})">
          <%include file="template_siemensstar.svg" args="ppi=75"/>
       </g>
   </g> <!-- Test pattern 2 -->
+  
+    <%def name="testpattern3(dpi)">
+    <%
+        test_pix2mm = tagdpp1200 / dpi * in2mm
+        
+        test_thickness_list = [0, 0.025, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3]
+        test_step = 4
+        test_pixlist = [
+                (1,1),
+                (3,1),
+                (4,0),(4,2),
+                (5,1),
+                (6,0),(6,2),
+                (7,0),(7,1),(7,2),
+                (8,0),(8,2),
+                (9,0),(9,1),(9,2),
+                (10,0),(10,1),(10,2),
+                (11,0),(11,1),(11,2),
+                ]
+    %>
+    <%def name="pixerod(x,y,tth)">
+        <rect x="${x+tth}" y="${y+tth}" width="${1-2*tth}" height="${1-2*tth}" fill="#000" stroke="none"/>
+    </%def>
+    <g transform="scale(${test_pix2mm},${test_pix2mm})">
+    
+    <text text-anchor="middle" dominant-baseline="alphabetic" 
+                      dx="0" dy="-2"
+                      font-family="Helvetica" font-size="2.5"
+                      fill="#000">${tagdpp1200} dpp @ ${dpi}dpi</text>
+    
+    %for iii,tth in enumerate(test_thickness_list):
+      <g transform="translate(6,${iii*test_step})">
+        <text text-anchor="middle" dominant-baseline="alphabetic" 
+                      dx="-28" dy="3"
+                      font-family="Helvetica" font-size="2.5"
+                      fill="#000">${"inf" if tth==0 else round(dpi / (tth*2*tagdpp1200),1)}</text>
+        <text text-anchor="middle" dominant-baseline="alphabetic" 
+                      dx="-10" dy="3"
+                      font-family="Helvetica" font-size="2.5"
+                      fill="#000">${tth*2}</text>
+        %for ttx,tty in test_pixlist:
+        ${pixerod(ttx,tty,tth)}
+        %endfor
+        <g transform="translate(14,0)">
+        <rect x="0" y="0" width="1" height="1" fill="#000" stroke="none"/>
+        <rect x="0" y="${1+tth}" width="1" height="1" fill="#000" stroke="none"/>
+        <rect x="${1+tth}" y="0" width="1" height="1" fill="#000" stroke="none"/>
+        
+        <rect x="4" y="0" width="${tth}" height="1" fill="#000" stroke="none"/>
+        <rect x="4" y="${1+tth}" width="${tth}" height="1" fill="#000" stroke="none"/>
+        <rect x="${4-1}" y="${2+tth}" width="1" height="${tth}" fill="#000" stroke="none"/>
+        <rect x="${4-2-tth}" y="${2+tth}" width="1" height="${tth}" fill="#000" stroke="none"/>
+        
+        %for jjj,tth2 in enumerate(test_thickness_list):
+            <rect x="${6+jjj}" y="0" width="${tth}" height="${tth}" fill="#000" stroke="none"/>
+            <rect x="${6+jjj}" y="${0+tth+tth2}" width="${tth}" height="${tth}" fill="#000" stroke="none"/>
+        %endfor
+        </g>
+      </g>
+    %endfor
+    </g>
+  </%def> <!-- Test pattern 3 -->
+  
 </defs>
 
 <g id="topgroup">
@@ -187,6 +249,15 @@
   testpattern_y0 = apply_hint_mm(test_patterns_y,50)
   %>
   <use xlink:href="#testpattern2" transform="translate(${testpattern_cx},${testpattern_y0})"/>
+  
+  <g id="testpattern3-1200" transform="translate(${testpattern_cx-1.0*halfinch},${testpattern_y0})">
+  ${testpattern3(1200)}
+  </g>
+  
+  <g id="testpattern3-1219" transform="translate(${testpattern_cx-2.0*halfinch},${testpattern_y0})">
+  ${testpattern3(1219.2)}
+  </g>
+  
 </g>
 <!-- 
 <g class="testPatterns">  
@@ -203,3 +274,32 @@
   <%include file="template_kerf_test.svg" args="blockmargin_left=kerftest_left, blockmargin_top=kerftest_top"/>
 </g>
 %endif
+
+<%def name="multilinetext(text,fontsize_pt,cols)">
+<%
+import textwrap
+
+wrapped = '\n'.join(['\n'.join(textwrap.wrap(line, cols,
+                 break_long_words=False, replace_whitespace=False))
+                 for line in text.splitlines()]).splitlines()
+
+
+#wrapped = textwrap.wrap(text, cols)
+%>
+<text font-family="Courier" font-weight="normal" font-size="${fontsize_pt*0.352778}" fill="black">
+%for line in wrapped:
+<tspan x="0" dy="1.2em">${line}</tspan>
+%endfor
+</text>
+</%def>
+
+<g class="commandline" transform="translate(${cmdline_left},${cmdline_top})">
+<%
+    if (show_cmdline_date):
+        thetext = 'Generated on '+date+'\n'
+    else:
+        thetext = ''
+    thetext += cmdline
+%>
+${multilinetext(thetext,cmdline_fontsize,cmdline_cols)}
+</g>

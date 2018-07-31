@@ -11,13 +11,15 @@ from mako import exceptions
 from mako.exceptions import RichTraceback
 from mako.lookup import TemplateLookup
 import argparse
+from datetime import datetime
 
 class Layout(object):
   def __init__(self):
+    self.cmdline = ""
     self.in2mm = 25.4
     
     self.family = "tag25h5inv"
-    self.tagcode_pix = 6          # image code
+    self.tagcode_pix = 5          # image code
     
     self.first_id = 0
     self.maxid = 3008 # for 25h5
@@ -74,6 +76,7 @@ class Layout(object):
     self.fontsize_id=1.5      # pix
     self.fontsize_idext=5   # pix
     self.fontsize_scalex=2.0   # factor
+    self.fontweight_id="700" #"900"
     self.tagid_margin=0.2
     
     self.custom = None
@@ -101,7 +104,9 @@ class Layout(object):
     self.tagborder_pix = 1       # inner border (included in img)
     self.tagmargin1_pix = 1      # minimal outer border for contrast
     self.tagmargin2_pix = 3      # outer border extra
+    self.bicol2_margin_pix = 2   # Bicolor outer border
     self.idheight_pix=1        # Height of extra text for label
+    self.tagmargin2top_pix = 3        # Height of extra text for label on top
     self.show_bitcode = False
     
     self.laserkerf_mm = 0.20
@@ -118,6 +123,8 @@ class Layout(object):
     self.border1stroke="white"
     self.border1strokewidth=0.1
     self.textcolor="black"
+    self.textbgcolor="none"
+    self.textbg_margin=0.3
     self.arrowcolor="black"
     self.crosscolor="black"
     self.tagid_bgcolor="#C000C0"
@@ -126,12 +133,17 @@ class Layout(object):
     self.show_colored_corners=False
     self.show_arrows=False
     self.show_bicolor=False
+    self.show_taggrid=False
+    self.taggrid_color="#FFF"
+    self.taggrid_strokewidth=0.2
 
     self.mode = 'tags'
     self.show_crosses = True
     self.show_corner_crosses = False
     self.show_test_patterns = True
     self.show_kerftest = False
+    self.show_guidelines = False
+    self.guidelines_color = "magenta"
     self.kerftest_left = 40
     self.kerftest_top = 450
     
@@ -149,6 +161,14 @@ class Layout(object):
     self.kerf_opacity = 1
     
     self.show_footer = False
+    
+    self.show_cmdline = False
+    self.show_cmdline_date = False
+    self.cmdline_left = 80
+    self.cmdline_top = 210
+    self.cmdline_fontsize = 7.0
+    self.cmdline_cols = 80
+    self.date = ""
     
     self.recompute_lengths()
   
@@ -203,6 +223,8 @@ class Layout(object):
         self.arrowcolor="lightcyan"
     else:
         print('ERROR: Unknown style={}'.format(self.style1))
+    if (self.show_bicolor):
+        self.border2color="none"
 
     # When recomputing, hint core alignments parameters to be integer at 300dpi
 
@@ -211,10 +233,11 @@ class Layout(object):
 
     self.last_id  = min(self.maxid, self.first_id+self.nblocksx*self.nblocksy*self.ntagsx*self.ntagsy)
   
+    self.tagmargin2top_pix = self.tagmargin2_pix + self.idheight_pix
     self.tagsize_pix = self.tagcode_pix + 2*self.tagborder_pix
     self.tagsize1_pix = self.tagsize_pix+2*self.tagmargin1_pix
     self.tagwidth2_pix = self.tagsize_pix+2*self.tagmargin2_pix
-    self.tagheight2_pix = self.tagsize_pix+2*self.tagmargin2_pix+self.idheight_pix
+    self.tagheight2_pix = self.tagsize_pix+self.tagmargin2_pix+self.tagmargin2top_pix
 
     self.tagsize = self.tagsize_pix * self.tagdpp1200 / 1200 * self.in2mm
     
@@ -679,12 +702,22 @@ if __name__ == "__main__":
     group.add_argument('-tc', '--textcolor',
                         dest='textcolor', default=layout.textcolor,
                         help='Color of tag ID text (default: %(default)s)')
+    group.add_argument('-tbc', '--textbgcolor',
+                        dest='textbgcolor', default=layout.textbgcolor,
+                        help='Color of tag ID background (default: %(default)s)')
+    group.add_argument('-tbm', '--textbg_margin', type=float,
+                        dest='textbg_margin', 
+                        default=layout.textbg_margin,
+                        help='Additional margin around text for bg (default: %(default)s)')
     group.add_argument('-ff', '--fontfamily',
                         dest='fontfamily', default=layout.fontfamily,
                         help='Font family for tag ID text (default: %(default)s)')
     group.add_argument('-fsi', '--fontsize_id',
                         dest='fontsize_id', default=layout.fontsize_id,
                         help='Tag ID fontsize in tag pixels (default: %(default)s)')
+    group.add_argument('-fwi', '--fontweight_id',
+                        dest='fontweight_id', default=layout.fontweight_id,
+                        help='Tag ID fontweight (default: %(default)s)')
     group.add_argument('-fsx', '--fontsize_scalex',
                         dest='fontsize_scalex', default=layout.fontsize_scalex,
                         help='X scale for tag ID (default: %(default)s)')
@@ -741,6 +774,15 @@ if __name__ == "__main__":
     group.add_argument('-tim', '--tagid_margin', metavar='<pixels>', type=float,
                         dest='tagid_margin', default=layout.tagid_margin,
                         help='number of pixels between tag id text and tag (default: %(default)s)')
+    group.add_argument('-tm2', '--tagmargin2', metavar='<pixels>', type=float,
+                        dest='tagmargin2_pix', default=layout.tagmargin2_pix,
+                        help='number of pixels of outer color(s), from border1 (default: %(default)s)')
+    group.add_argument('-tm2b', '--bicol2_margin_pix', metavar='<pixels>', type=float,
+                        dest='bicol2_margin_pix', default=layout.bicol2_margin_pix,
+                        help='number of pixels of outer color(s) for bicolor (default: %(default)s)')
+    group.add_argument('-sg', '--show_guidelines', action='store_true',
+                        dest='show_guidelines', default=layout.show_guidelines,
+                        help='show guidelines (default: %(default)s)')
                                                 
     group.add_argument('-cx', '--axismargin_left', metavar='<marginleft>', 
                         type=float,
@@ -759,6 +801,36 @@ if __name__ == "__main__":
     group.add_argument('-tpy', '--test_patterns_y', type=float,
                         dest='test_patterns_y', default=layout.kerftest_top,
                         help='top corner of Siemens test pattern (default: %(default)s)')
+                        
+    group.add_argument('-cl', '--show_cmdline', action='store_true',
+                        dest='show_cmdline', default=layout.show_cmdline,
+                        help='show command line (default: %(default)s)')
+    group.add_argument('-cld', '--show_cmdline_date', action='store_true',
+                        dest='show_cmdline_date', default=layout.show_cmdline_date,
+                        help='show date (default: %(default)s)')
+    group.add_argument('-clx', '--cmdline_left', type=float,
+                        dest='cmdline_left', default=layout.cmdline_left,
+                        help='left corner of cmd line (default: %(default)s)')
+    group.add_argument('-cly', '--cmdline_top', type=float,
+                        dest='cmdline_top', default=layout.cmdline_top,
+                        help='top corner of cmd line (default: %(default)s)')
+    group.add_argument('-clfs', '--cmdline_fontsize', type=float,
+                        dest='cmdline_fontsize', default=layout.cmdline_fontsize,
+                        help='fontsize of cmd line in pt (default: %(default)s)')
+    group.add_argument('-clw', '--cmdline_cols', type=int,
+                        dest='cmdline_cols', default=layout.cmdline_cols,
+                        help='width of cmd line in columns (default: %(default)s)')
+
+    group.add_argument('-tg', '--show_taggrid', action='store_true',
+                        dest='show_taggrid', default=layout.show_taggrid,
+                        help='show interpixel tag grid (default: %(default)s)')
+    group.add_argument('-tgc', '--taggrid_color', 
+                        dest='taggrid_color', default=layout.taggrid_color,
+                        help='stroke color of tag grid (default: %(default)s)')
+    group.add_argument('-tgsw', '--taggrid_strokewidth', type=float,
+                        dest='taggrid_strokewidth', default=layout.taggrid_strokewidth,
+                        help='stroke width of tag grid (default: %(default)s)')
+
                         
     group = parser.add_argument_group('Lasercutting')
     group.add_argument('-kf', '--laserkerf_mm', metavar='<kerf in mm>', 
@@ -789,6 +861,8 @@ if __name__ == "__main__":
         #print("  Configuring '{}'".format(field))
         print("  Configuring {}={}".format(field,getattr(args,field)))
         setattr(layout, field,getattr(args,field))
+    setattr(layout, 'date', str(datetime.now()))
+    setattr(layout, 'cmdline',' '.join(sys.argv[1:]))
     generator.verbose = args.verbose
         
     def computeOutputFile(generator):

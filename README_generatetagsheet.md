@@ -61,7 +61,21 @@ or using script
 Do it with some white border to balance white/black pixels
 
 ```
-for f in *.svg; do sed 's/stroke="none"/stroke="red" stroke-width="0.3"/' $f > ../svg-3w/$f; done
+mkdir -p ../svg-3w ../svg-3w-preview
+# Test
+for f in *.svg; do sed 's/stroke="none"/stroke="white" stroke-width="0.3"/' $f > ../svg-3w-preview/$f; done
+# Final
+for f in *.svg; do sed 's/stroke="none"/stroke="white" stroke-width="0.3"/' $f > ../svg-3w/$f; done
+```
+
+Do it with some white border to balance white/black pixels
+
+```
+mkdir -p ../svg-2w ../svg-2w-preview
+# Test
+for f in *.svg; do sed 's/stroke="none"/stroke="red" stroke-width="0.2"/' $f > ../svg-2w-preview/$f; done
+# Final
+for f in *.svg; do sed 's/stroke="none"/stroke="white" stroke-width="0.2"/' $f > ../svg-2w/$f; done
 ```
 
 
@@ -274,3 +288,35 @@ python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 1000 -v 1999 -b
 python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=all -col0 '#000' -col1 '#fff' -tc '#fff' -b1sw 0.3 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_blacktext2' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3
 
 
+
+# Test with svg-2w
+
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=all -col0 '#000' -col1 '#fff' -tc '#fff' -b1sw 0.3 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_blacktext2w' -rm -kfv 0.2 -td '{family}/svg-2w' -tim 0.3
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 1000 -v 1999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=all -col0 '#000' -col1 '#fff' -tc '#fff' -b1sw 0.3 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_blacktext2w' -rm -kfv 0.2 -td '{family}/svg-2w' -tim 0.3
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -m=all -col0 '#000' -col1 '#fff' -tc '#fff' -b1sw 0.3 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_blacktext2w' -rm -kfv 0.2 -td '{family}/svg-2w' -tim 0.3
+
+
+# Test colors
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -col0 '#f00' -col1 '#0f0' -tc '#000' -b1sw 0.2 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_2w_test' -rm -kfv 0.2 -td '{family}/svg-2w' -tim 0.3 -m=tags
+
+
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 100 -u 2900 -v 2900 -bx 1 -by 1 -pz letter -kt -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -col0 '#f00' -col1 '#0f0' -tc '#000' -b1sw 0.2 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_2w_test' -rm -kfv 0.2 -td '{family}/svg-2w' -tim 0.3 -m=tags -tbc white -tm2 3 -tm2b 2.2 -tg -tgc '#FFF' -tgsw 0.2 -fwi normal
+
+
+# Ask quote
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -col0 '#f0f' -col1 '#0ff' -tc '#000' -b1sw 0.2 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_2w_test' -rm -kfv 0.2 -td '{family}/svg-2w' -tim 0.3 -m=tags -tbc white -tm2 3 -tm2b 2.2 -tg -tgc '#FFF' -tgsw 0.2 -fwi normal
+
+
+HP Indigo: 
+1219 ppi = 48 ppmm (exact 
+609.5 ppi = 24 ppmm
+304.75 = 12ppmm
+121.9 ppi = 4.8 ppmm
+
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -col0 '#0ff' -col1 '#0ff' -tc '#000' -b1sw 0.2 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_2w_test' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -m=tags -tbc white -tm2 3 -tm2b 2.2 -tg -tgc '#FFF' -tgsw 0.2 -fwi normal

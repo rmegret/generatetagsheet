@@ -1,5 +1,5 @@
 ﻿
-<%page args="block_first_id, blockmargin_left, blockmargin_top, show_block_title=True"/>
+<%page args="block_first_id, blockmargin_left, blockmargin_top, show_block_title=True, block_test=False"/>
 
 <%! 
     import math 
@@ -32,7 +32,10 @@
 %if show_block_title:
     <%
     lefttit=family;
-    midtit="{tagsize:.3f}mm ({tagdpp1200:.1f}dpp)".format(tagsize=tagsize,tagdpp1200=tagdpp1200)
+    midtit="{tagsize:.3f}mm ({tagdpp1200:.1f}dpp)".format(
+                tagsize=tagsize,tagdpp1200=tagdpp1200)
+    if (show_taggrid):
+        midtit += " tgsw={tgsw}".format(tgsw=taggrid_strokewidth)
     righttit="{kmin}..{kmax}".format(family=family, kmin=kmin, kmax=kmax)
 
     tit_left=blockmargin_left
@@ -77,7 +80,7 @@
         
     # Outer border dimensions
     pix_left=tagmargin2_pix
-    pix_top=tagmargin2_pix+idheight_pix
+    pix_top=tagmargin2top_pix
     
     arrowshift=0.7
     arrowwidth=0.7
@@ -104,12 +107,10 @@
 %>
 <defs>
   <g id="arrow_${blockid}">
-      <path d="M 0,0 l -${arrowlen} -${arrowwidth} l 0 ${arrowwidth} Z" fill="${arrowcolor}" stroke="none"/>
-<!--       <path d="M 0,0  l -${arrowlen} ${arrowwidth} l 0 -${arrowwidth*2} Z" fill="#red" stroke="none" transform="translate(-${arrowshift},0) scale(${(arrowlen-arrowshift)/arrowlen})"/> -->
+      <path d="M 0,0 l ${-arrowlen} -${arrowwidth} l 0 ${arrowwidth} Z" fill="${arrowcolor}" stroke="none"/>
   </g>
   <g id="arrow2_${blockid}">
-      <path d="M 0,0 l -${arrowlen-1} ${arrowwidth} l 0 -${arrowwidth*2} Z" fill="${arrowcolor}" stroke="none"/>
-<!--       <path d="M 0,0  l -${arrowlen-1} ${arrowwidth} l 0 -${arrowwidth*2} Z" fill="#red" stroke="none" transform="translate(-${arrowshift},0) scale(${(arrowlen-1-arrowshift)/(arrowlen-1)})"/> -->
+      <path d="M 0,0 l ${-(arrowlen-1)} ${arrowwidth} l 0 ${-arrowwidth*2} Z" fill="${arrowcolor}" stroke="none"/>
   </g>
   <g id="bg_${blockid}">
       <g class="tagbg">
@@ -134,12 +135,23 @@
         
         %if show_bicolor:
         <!-- Title colored rectangle -->
-        <rect x="-${tagmargin2_pix}" y="-${idheight_pix+tagmargin2_pix}" 
-              width="${tagsize_pix+2*tagmargin2_pix}" height="${idheight_pix+tagmargin2_pix+tagsize_pix/2}"
+<!--         <rect x="${-tagmargin2_pix}" y="${-idheight_pix-tagmargin2_pix}"  -->
+        <rect x="${-bicol2_margin_pix}" y="${-bicol2_margin_pix}"
+              width="${tagsize_pix+2*bicol2_margin_pix}" height="${bicol2_margin_pix+tagsize_pix/2}"
               fill="${tagid_bgcolor}" stroke="none"/>
-        <rect x="-${tagmargin2_pix}" y="${tagsize_pix/2}" 
-              width="${tagsize_pix+2*tagmargin2_pix}" height="${tagsize_pix/2+tagmargin2_pix}"
+        <rect x="${-bicol2_margin_pix}" y="${tagsize_pix/2}" 
+              width="${tagsize_pix+2*bicol2_margin_pix}" height="${tagsize_pix/2+bicol2_margin_pix}"
               fill="${tagcornercolor1}" stroke="none"/>
+        <path d="M ${-bicol2_margin_pix},${tagsize_pix/2} l ${tagsize_pix+2*bicol2_margin_pix},0"
+              stroke="${border1stroke}" stroke-width="${border1strokewidth}"/>
+        %endif
+        
+        %if textbgcolor != 'none':
+        <!-- Text solid background -->
+        <rect x="${-textbg_margin}" y="${-tagmargin1_pix-tagid_margin-idheight_pix-textbg_margin}" 
+              width="${tagsize_pix+2*textbg_margin}" 
+              height="${idheight_pix+2*textbg_margin}" 
+              fill="${textbgcolor}"/>
         %endif
         
         %if show_arrows:
@@ -166,16 +178,18 @@
         %endif
         
         <!-- Border1 rectangle -->
-        <rect x="-${tagmargin1_pix}" y="-${tagmargin1_pix}" 
+        <!-- Border1 stroke -->
+        <rect x="${-tagmargin1_pix}" y="${-tagmargin1_pix}" 
               width="${tagsize1_pix}" height="${tagsize1_pix}" 
               rx="${tagmargin1_pix}" ry="${tagmargin1_pix}" 
               fill="none" 
               stroke="${border1stroke}" stroke-width="${border1strokewidth*2}"/>
-        <rect x="-${tagmargin1_pix}" y="-${tagmargin1_pix}" 
+        <!-- Border1 solid frame -->
+        <rect x="${-tagmargin1_pix}" y="${-tagmargin1_pix}" 
               width="${tagsize1_pix}" height="${tagsize1_pix}" 
               rx="${tagmargin1_pix}" ry="${tagmargin1_pix}" 
               fill="${border1color}" stroke="none"/>
-              
+                            
         <!-- Tag background rectangle -->
         <rect width="${tagsize_pix}" height="${tagsize_pix}" fill="${tagbgcolor}" stroke="none"/>
       </g>
@@ -306,14 +320,36 @@
 <!--         <text class="tagvalue" x="${cx}" y="${-tagmargin1_pix-0.1}" text-anchor="middle"  -->
           <text class="tagvalue" text-anchor="middle"
               font-family="${fontfamily}" transform="scale(${fontsize_scalex},1)" 
-              font-weight="900" font-size="${fontsize_id}" 
+              font-weight="${fontweight_id}" font-size="${fontsize_id}" 
               fill="${textcolor}">${id}</text>
         </g>
         %endif
               
         %if show_tag_img:
         <use transform="scale(${imgsc},${imgsc})" xlink:href="${imname}#top"></use>
+        
+        %if show_taggrid:
+            <path d="
+            %for pixi in range(0,tagsize_pix+1):
+            M ${-taggrid_strokewidth/2},${pixi} 
+            L ${tagsize_pix+taggrid_strokewidth/2},${pixi}
+            %endfor
+            " 
+            fill="none" stroke="${taggrid_color}" 
+            stroke-width="${taggrid_strokewidth}"/>
+            <path d="
+            %for pixi in range(0,tagsize_pix+1):
+            M ${pixi},${-taggrid_strokewidth/2} 
+            L ${pixi},${tagsize_pix+taggrid_strokewidth/2}
+            %endfor
+            " 
+            fill="none" stroke="${taggrid_color}" 
+            stroke-width="${taggrid_strokewidth}"/>
         %endif
+    
+        %endif
+        
+        
 
         %endif
 
@@ -323,6 +359,20 @@
     %endif
     %if show_tag_cut:
         ${cut("cut_"+blockid, cut_left, cut_top, cut_width, cut_height, cut_radius, cut_opening_pix)}
+    %endif
+    
+    %if show_guidelines:
+        <rect x="0" y="0" width="${tagsize_pix}" height="${tagsize_pix}" 
+            fill="none" stroke="${guidelines_color}" 
+            stroke-width="0.01" stroke-dasharray="0.2"/>
+        %for pixi in range(1,tagsize_pix):
+            <path d="M 0,${pixi} L ${tagsize_pix},${pixi}" 
+            fill="none" stroke="${guidelines_color}" 
+            stroke-width="0.01" stroke-dasharray="0.2"/>
+            <path d="M ${pixi},0 L ${pixi},${tagsize_pix}" 
+            fill="none" stroke="${guidelines_color}" 
+            stroke-width="0.01" stroke-dasharray="0.2"/>
+        %endfor
     %endif
       </g> <!-- Tag -->
     
