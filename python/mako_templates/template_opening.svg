@@ -60,7 +60,7 @@
   <%include file="template_checkers.svg"/>
     
   <g id="testpattern">
-  <g transform="translate(0,${halfinch*0})">
+  <g transform="translate(pt_dpi*ptshift,${halfinch*0+pt_dpi*ptshift})">
     <% s=25.4/1200 %>
     <text text-anchor="middle" dominant-baseline="alphabetic" dy="-1"
                   font-family="Helvetica" font-size="1"
@@ -149,7 +149,7 @@
       </g>
   </g> <!-- Test pattern 2 -->
   
-    <%def name="testpattern3(dpi)">
+    <%def name="testpattern3(dpi, use_color=False)">
     <%
         test_pix2mm = tagdpp1200 / dpi * in2mm
         
@@ -168,8 +168,8 @@
                 (11,0),(11,1),(11,2),
                 ]
     %>
-    <%def name="pixerod(x,y,tth)">
-        <rect x="${x+tth}" y="${y+tth}" width="${1-2*tth}" height="${1-2*tth}" fill="#000" stroke="none"/>
+    <%def name="pixerod(x,y,tth, fill='#000')">
+        <rect x="${x+tth}" y="${y+tth}" width="${1-2*tth}" height="${1-2*tth}" fill="${fill}" stroke="none"/>
     </%def>
     <g transform="scale(${test_pix2mm},${test_pix2mm})">
     
@@ -189,26 +189,82 @@
                       font-family="Helvetica" font-size="2.5"
                       fill="#000">${tth*2}</text>
         %for ttx,tty in test_pixlist:
-        ${pixerod(ttx,tty,tth)}
+        ${pixerod(ttx,tty,0)}
         %endfor
+        
+        %for ttx in range(13):
+          <path d="M ${ttx} 0 l 0 3" fill="none" stroke="${taggrid_color}"  stroke-width="${tth*2}"/>
+        %endfor
+        %for tty in range(4):
+          <path d="M 0 ${tty} l 12 0" fill="none" stroke="${taggrid_color}"  stroke-width="${tth*2}"/>
+        %endfor
+        
         <g transform="translate(14,0)">
         <rect x="0" y="0" width="1" height="1" fill="#000" stroke="none"/>
-        <rect x="0" y="${1+tth}" width="1" height="1" fill="#000" stroke="none"/>
-        <rect x="${1+tth}" y="0" width="1" height="1" fill="#000" stroke="none"/>
+        <rect x="0" y="${1+2*tth}" width="1" height="1" fill="#000" stroke="none"/>
+        <rect x="${1+2*tth}" y="0" width="1" height="1" fill="#000" stroke="none"/>
         
-        <rect x="4" y="0" width="${tth}" height="1" fill="#000" stroke="none"/>
-        <rect x="4" y="${1+tth}" width="${tth}" height="1" fill="#000" stroke="none"/>
-        <rect x="${4-1}" y="${2+tth}" width="1" height="${tth}" fill="#000" stroke="none"/>
-        <rect x="${4-2-tth}" y="${2+tth}" width="1" height="${tth}" fill="#000" stroke="none"/>
+        <rect x="4" y="0" width="${2*tth}" height="1" fill="#000" stroke="none"/>
+        <rect x="4" y="${1+2*tth}" width="${2*tth}" height="1" fill="#000" stroke="none"/>
+        <rect x="${4-1}" y="${2+2*tth}" width="1" height="${2*tth}" fill="#000" stroke="none"/>
+        <rect x="${4-2-2*tth}" y="${2+2*tth}" width="1" height="${2*tth}" fill="#000" stroke="none"/>
         
         %for jjj,tth2 in enumerate(test_thickness_list):
-            <rect x="${6+jjj}" y="0" width="${tth}" height="${tth}" fill="#000" stroke="none"/>
-            <rect x="${6+jjj}" y="${0+tth+tth2}" width="${tth}" height="${tth}" fill="#000" stroke="none"/>
+            <rect x="${6+jjj}" y="0" width="${2*tth}" height="${2*tth}" fill="#000" stroke="none"/>
+            <rect x="${6+jjj}" y="${0+2*tth+2*tth2}" width="${2*tth}" height="${2*tth}" fill="#000" stroke="none"/>
         %endfor
+        
+        %if (use_color):
+          <g transform="translate(15,0)">
+            ${pixerod(0,0,tth, '#f0f')}
+            ${pixerod(2,0,tth, '#ff0')}
+            ${pixerod(0,2,tth, '#0ff')}
+            
+            ${pixerod(4,2,tth, '#000')}
+            ${pixerod(3,2,tth, '#f0f')}
+            ${pixerod(4,1,tth, '#ff0')}
+            ${pixerod(5,2,tth, '#0ff')}
+            
+            ${pixerod(6,0,tth, '#f00')}
+            ${pixerod(8,0,tth, '#0f0')}
+            ${pixerod(8,2,tth, '#00f')}
+            
+            ${pixerod(10,0,tth, '#000')}
+            ${pixerod(10,2,tth, '#444')}
+            ${pixerod(12,0,tth, '#888')}
+            ${pixerod(12,2,tth, '#bbb')}
+          </g>
+        %endif
         </g>
       </g>
     %endfor
+    
+    <g transform="translate(6, ${len(test_thickness_list)*test_step})">
+    %for ggg in range(0,16):
+      ${pixerod(ggg,0, 0, "#"+(hex(ggg)[-1]*3))}
+    %endfor
     </g>
+    
+    <%def name="testText(x,y, text='012345678')">
+      <text x="${x}" y="${y}" text-anchor="middle"
+          font-family="${fontfamily}" transform="scale(${fontsize_scalex},1)" 
+          %if (letterspacing!=""):
+          letter-spacing="${letterspacing}" 
+          %endif
+          font-weight="${fontweight_id}" font-size="${fontsize_id}" 
+          fill="${textcolor}">${text}</text>
+    </%def>
+    
+    <g transform="translate(6, ${len(test_thickness_list)*test_step+3})" >
+      ${testText(0,0)}
+      ${testText(16.05,0)}
+      ${testText(0,2.05)}
+      ${testText(16.05,2.05)}
+      ${testText(0,4.1)}
+      ${testText(16.1,4.1)}
+    </g>
+    
+    </g> <!-- transform -->
   </%def> <!-- Test pattern 3 -->
   
 </defs>
@@ -245,17 +301,17 @@
   <%
   #testpattern_cx = halfinch
   #testpattern_y0 = halfinch*6
-  testpattern_cx = apply_hint_mm(test_patterns_x,50)
-  testpattern_y0 = apply_hint_mm(test_patterns_y,50)
+  testpattern_cx = apply_hint_mm(test_patterns_x,50)+pt_dpi*ptshift
+  testpattern_y0 = apply_hint_mm(test_patterns_y,50)+pt_dpi*ptshift
   %>
   <use xlink:href="#testpattern2" transform="translate(${testpattern_cx},${testpattern_y0})"/>
   
   <g id="testpattern3-1200" transform="translate(${testpattern_cx-1.0*halfinch},${testpattern_y0})">
-  ${testpattern3(1200)}
+  ${testpattern3(1200, True)}
   </g>
   
   <g id="testpattern3-1219" transform="translate(${testpattern_cx-2.0*halfinch},${testpattern_y0})">
-  ${testpattern3(1219.2)}
+  ${testpattern3(1219.2, True)}
   </g>
   
 </g>
@@ -303,3 +359,16 @@ wrapped = '\n'.join(['\n'.join(textwrap.wrap(line, cols,
 %>
 ${multilinetext(thetext,cmdline_fontsize,cmdline_cols)}
 </g>
+
+<%def name="test_tags(ids)">
+  <%
+    ntagsx = len(ids)
+  %>
+  <%include file="template_block.svg" args="block_first_id=0, show_block_title=False, blockmargin_left=test_tags_x, blockmargin_top=test_tags_y, block_test=True, ids=ids, ntagsx=ntagsx, ntagsy=1"/>
+</%def>
+
+%if (show_test_tags):
+<g class="testTags">  
+  ${test_tags([0,29,700,952,1723,1907,1937,1963,2051,2563])}
+</g>
+%endif

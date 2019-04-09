@@ -1,5 +1,5 @@
 ﻿
-<%page args="block_first_id, blockmargin_left, blockmargin_top, show_block_title=True, block_test=False"/>
+<%page args="block_first_id, blockmargin_left, blockmargin_top, show_block_title=True, block_test=False, ids=None, ntagsx=1, ntagsy=1"/>
 
 <%! 
     import math 
@@ -11,6 +11,10 @@
       return round(val_in*dpi)/dpi*in2mm
 
     halfinch=25.4/2
+
+%>
+<%
+    pt1200 = in2mm/1200
 %>
 
 <%
@@ -20,6 +24,12 @@
     blockid = "{}_{}_{}".format(kmin,family,tagsize)
     
     block_is_visible = (kmax>=first_id) and (kmin<=maxid)
+    if (block_test):
+        block_is_visible = True
+        block_id = "testtags_{}_{}".format(family,tagsize)
+        
+    blocksize_x=step_x*ntagsx
+    blocksize_y=step_y*ntagsy
 %>
 
 <!-- Block of tags ${kmin}..${kmax} -->
@@ -34,8 +44,10 @@
     lefttit=family;
     midtit="{tagsize:.3f}mm ({tagdpp1200:.1f}dpp)".format(
                 tagsize=tagsize,tagdpp1200=tagdpp1200)
-    if (show_taggrid):
-        midtit += " tgsw={tgsw}".format(tgsw=taggrid_strokewidth)
+    if (use_local_dpi):
+        midtit += " dpi={dpi}".format(dpi=local_dpi)
+    #if (show_taggrid):  # Not needed in production (see cmdline instead for debug)
+    #    midtit += " tgsw={tgsw}".format(tgsw=taggrid_strokewidth)
     righttit="{kmin}..{kmax}".format(family=family, kmin=kmin, kmax=kmax)
 
     tit_left=blockmargin_left
@@ -194,6 +206,27 @@
         <rect width="${tagsize_pix}" height="${tagsize_pix}" fill="${tagbgcolor}" stroke="none"/>
       </g>
   </g>
+  <g id="taggrid_${blockid}">
+    <path d="
+    %for pixi in range(1,tagsize_pix):
+    M ${0},${pixi} 
+    L ${tagsize_pix},${pixi}
+    %endfor
+    " 
+    fill="none" stroke="${taggrid_color}" 
+    stroke-width="${taggrid_strokewidth}"/>
+    <path d="
+    %for pixi in range(1,tagsize_pix):
+    M ${pixi},${0} 
+    L ${pixi},${tagsize_pix}
+    %endfor
+    " 
+    fill="none" stroke="${taggrid_color}" 
+    stroke-width="${taggrid_strokewidth}"/>
+    <rect x="0" y="0" width="${tagsize_pix}" height="${tagsize_pix}" 
+          fill="none" stroke="${taggrid_color}" 
+          stroke-width="${taggrid_strokewidth}"/>
+  </g>
   
 <%def name="cut(id, cut_left, cut_top, cut_width, cut_height, r, opening=0)">
   %if (opening==0):
@@ -259,6 +292,8 @@
     def col(id,k):
         b = (int(id)//(6**k)) % 6
         return cols[b]
+        
+    bincols = {"0":"#FFF", "1":"#000"};
   %>
 
 <%def name="bitcode(id, tagsize_pix,x0,y0,sx,sy)">
@@ -271,6 +306,23 @@
   </g>
 </%def>
 
+<%def name="code(S, N,x0,y0,sx,sy, dx,dy)">
+  <g class="code" transform="translate(${x0},${y0}) scale(${sx},${sy})">
+    %for i in range(N):
+    <rect x="${i*dx}" y="${i*dy}" width="1" height="1" fill="${bincols[S[i]]}" stroke="none"/>
+    %endfor
+    <rect x="${-1*dx}" y="${-1*dy}" width="1" height="1" fill="${bincols['0']}" stroke="none"/>
+    <rect x="${N*dx}" y="${N*dy}" width="1" height="1" fill="${bincols['0']}" stroke="none"/>
+    %if dy==0:
+    <rect x="${-1*dx+0.3}" y="${-1*dy}" width="${0.4*dx}" height="1" fill="${bincols['1']}" stroke="none"/>
+    <rect x="${N*dx+0.3}" y="${N*dy}" width="${0.4*dx}" height="1" fill="${bincols['1']}" stroke="none"/>
+    %else:
+    <rect x="${-1*dx}" y="${-1*dy+0.3}" width="1" height="${0.4*dy}" fill="${bincols['1']}" stroke="none"/>
+    <rect x="${N*dx}" y="${N*dy+0.3}" width="1" height="${0.4*dy}" fill="${bincols['1']}" stroke="none"/>
+    %endif
+  </g>
+</%def>
+
 ## #### TAG GRID ####
 
 %for iy in range(0,ntagsy):
@@ -279,15 +331,19 @@
     <%
     id=ix+ntagsx*iy+block_first_id
     
-    if (id>maxid):
-        continue
+    if (block_test):
+        if (ix>=len(ids)): continue
+        id = ids[ix]
+    else:
+        if (id>maxid):
+            continue
   
     # Cell origin
     x=blockmargin_left+ix*step_x
     y=blockmargin_top+iy*step_y
     
-    x = apply_hint_mm(x)
-    y = apply_hint_mm(y)
+    x = apply_hint_mm(x, 300)+pt_dpi*ptshift
+    y = apply_hint_mm(y, 300)+pt_dpi*ptshift
 
     imname = reltagdir +"/"+ tagfiles.format(family=family,id=id)
     absimname = abstagdir +"/"+ tagfiles.format(family=family,id=id)
@@ -300,80 +356,85 @@
     
     <g class="tagcell" transform="translate(${x},${y})">
       %if show_tag_cell:
-      <rect x="0" y="0" width="${step_x}" height="${step_y}" fill="none" stroke="yellow" 
-            stroke-width="0.05"/>
+        <rect x="0" y="0" width="${step_x}" height="${step_y}" fill="none" stroke="yellow" 
+              stroke-width="0.05"/>
       %endif
     
+      <%
+        pix2mm_local_dpi = pix2mm
+        if (use_local_dpi):
+          pix2mm_local_dpi = tagdpp1200 / local_dpi * in2mm
+          dx_local = apply_hint_mm(dx+(pix_left+tagsize_pix/2)*pix2mm_local_dpi, local_dpi)  # Hint at 1:1 dpi to avoid too much drift
+          dy_local = apply_hint_mm(dy+(pix_top+tagsize_pix/2)*pix2mm_local_dpi, local_dpi)
+      %>
+
+      %if (use_local_dpi):
       <g id="tag${id}" 
-         transform="translate(${dx},${dy}) scale(${pix2mm},${pix2mm}) translate(${pix_left},${pix_top})">
+         transform="translate(${dx_local},${dy_local}) scale(${pix2mm_local_dpi},${pix2mm_local_dpi}) translate(${-tagsize_pix/2},${-tagsize_pix/2})">
+      %else:
+      <g id="tag${id}" 
+         transform="translate(${dx},${dy}) scale(${pix2mm_local_dpi},${pix2mm_local_dpi}) translate(${pix_left},${pix_top})">
+      %endif
 
         %if show_tag:
-        <use xlink:href="#bg_${blockid}"/>
-        <text class="tagvalueext" x="${cx}" y="-${tagmargin2_pix+3}" text-anchor="middle" 
-              font-family="${fontfamily}" font-weight="bolder" font-size="${fontsize_idext}" 
-              fill="black">${id}</text>
+          <use xlink:href="#bg_${blockid}"/>
+          <text class="tagvalueext" x="${cx}" y="-${tagmargin2_pix+3}" text-anchor="middle" 
+                font-family="${fontfamily}" font-weight="bolder" font-size="${fontsize_idext}" 
+                fill="black">${id}</text>
               
-        %if show_bitcode:
-        ${bitcode(id,tagsize_pix,1,-2,5.0/5,1)}
-        %else:
-        <g transform="translate(${cx},${-tagmargin1_pix-tagid_margin})" >
-<!--         <text class="tagvalue" x="${cx}" y="${-tagmargin1_pix-0.1}" text-anchor="middle"  -->
-          <text class="tagvalue" text-anchor="middle"
-              font-family="${fontfamily}" transform="scale(${fontsize_scalex},1)" 
-              font-weight="${fontweight_id}" font-size="${fontsize_id}" 
-              fill="${textcolor}">${id}</text>
-        </g>
-        %endif
+          %if show_bitcode:
+            ${bitcode(id,tagsize_pix,1,-2,5.0/5,1)}
+          %else:
+            <g transform="translate(${cx},${-tagmargin1_pix-tagid_margin})" >
+              <text class="tagvalue" text-anchor="middle"
+                  font-family="${fontfamily}" transform="scale(${fontsize_scalex},1)" 
+                  %if (letterspacing!=""):
+                  letter-spacing="${letterspacing}" 
+                  %endif
+                  font-weight="${fontweight_id}" font-size="${fontsize_id}" 
+                  fill="${textcolor}">${id}</text>
+            </g>
+          %endif
+          
+          %if codebottom is not None:
+            ${code(codebottom,tagcode_pix,1,tagsize_pix+1+border1strokewidth,1,1, 1,0)}
+          %endif
+          %if codesides is not None:
+            ${code(codesides,tagcode_pix,-border1strokewidth-2,1, 1,1, 0,1)}
+            ${code(codesides[::-1],tagcode_pix,tagsize_pix+1+border1strokewidth,1, 1,1, 0,1)}
+          %endif
               
-        %if show_tag_img:
-        <use transform="scale(${imgsc},${imgsc})" xlink:href="${imname}#top"></use>
+          %if show_tag_img:
+          <use transform="scale(${imgsc},${imgsc})" xlink:href="${imname}#top"></use>
         
-        %if show_taggrid:
-            <path d="
-            %for pixi in range(0,tagsize_pix+1):
-            M ${-taggrid_strokewidth/2},${pixi} 
-            L ${tagsize_pix+taggrid_strokewidth/2},${pixi}
-            %endfor
-            " 
-            fill="none" stroke="${taggrid_color}" 
-            stroke-width="${taggrid_strokewidth}"/>
-            <path d="
-            %for pixi in range(0,tagsize_pix+1):
-            M ${pixi},${-taggrid_strokewidth/2} 
-            L ${pixi},${tagsize_pix+taggrid_strokewidth/2}
-            %endfor
-            " 
-            fill="none" stroke="${taggrid_color}" 
-            stroke-width="${taggrid_strokewidth}"/>
+            %if show_taggrid:
+                <use xlink:href="#taggrid_${blockid}"/>
+            %endif
+    
+          %endif
+
+        %endif
+        
+        %if show_tag_cutkerf:
+            ${cutkerf("cut_kerf"+blockid, cut_left, cut_top, cut_width, cut_height, cut_radius, cut_opening_pix)}
+        %endif
+        %if show_tag_cut:
+            ${cut("cut_"+blockid, cut_left, cut_top, cut_width, cut_height, cut_radius, cut_opening_pix)}
         %endif
     
+        %if show_guidelines:
+            <rect x="0" y="0" width="${tagsize_pix}" height="${tagsize_pix}" 
+                fill="none" stroke="${guidelines_color}" 
+                stroke-width="0.01" stroke-dasharray="0.2"/>
+            %for pixi in range(1,tagsize_pix):
+                <path d="M 0,${pixi} L ${tagsize_pix},${pixi}" 
+                fill="none" stroke="${guidelines_color}" 
+                stroke-width="0.01" stroke-dasharray="0.2"/>
+                <path d="M ${pixi},0 L ${pixi},${tagsize_pix}" 
+                fill="none" stroke="${guidelines_color}" 
+                stroke-width="0.01" stroke-dasharray="0.2"/>
+            %endfor
         %endif
-        
-        
-
-        %endif
-
-
-    %if show_tag_cutkerf:
-        ${cutkerf("cut_kerf"+blockid, cut_left, cut_top, cut_width, cut_height, cut_radius, cut_opening_pix)}
-    %endif
-    %if show_tag_cut:
-        ${cut("cut_"+blockid, cut_left, cut_top, cut_width, cut_height, cut_radius, cut_opening_pix)}
-    %endif
-    
-    %if show_guidelines:
-        <rect x="0" y="0" width="${tagsize_pix}" height="${tagsize_pix}" 
-            fill="none" stroke="${guidelines_color}" 
-            stroke-width="0.01" stroke-dasharray="0.2"/>
-        %for pixi in range(1,tagsize_pix):
-            <path d="M 0,${pixi} L ${tagsize_pix},${pixi}" 
-            fill="none" stroke="${guidelines_color}" 
-            stroke-width="0.01" stroke-dasharray="0.2"/>
-            <path d="M ${pixi},0 L ${pixi},${tagsize_pix}" 
-            fill="none" stroke="${guidelines_color}" 
-            stroke-width="0.01" stroke-dasharray="0.2"/>
-        %endfor
-    %endif
       </g> <!-- Tag -->
     
     </g>  <!-- Tag cell -->

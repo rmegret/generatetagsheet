@@ -1,0 +1,57 @@
+%!
+/oldsetrgbcolor /setrgbcolor load def
+/setrgbcolor {
+%%(in replacement setrgbcolor\n) print
+
+  %% Stack: [bottom] R G B [top]
+  1 index 1 index       %% R G B G B
+  eq {                  %%
+     2 index 1 index    %% R G B R B
+     eq {
+                        %% Here if R = G = B
+      pop pop           %% remove G and B
+      -1 mul  1 add   %% obtain K=1-R on top of stack
+      0 0 0 4 -1 roll % push CMY:000 after K and roll down,
+                      % so top of stack becomes C:M:Y:K
+      setcmykcolor    %% now set(cmykcolor) K (as 1-Gray)
+     } {
+       -1 mul 1 add  3 1 roll  %% Compute 1-B and roll to bottom 1-B, R, G
+       -1 mul 1 add  3 1 roll  %% Compute 1-G and roll to bottom 1-G, 1-B, R
+       -1 mul 1 add  3 1 roll  %% Compute 1-R and roll to bottom 1-R, 1-G, 1-B
+       0   %% Append K value, so stack is now 1-R,1-G,1-B,K
+       setcmykcolor   %% set CMYK
+     } ifelse
+  }{
+       -1 mul 1 add  3 1 roll
+       -1 mul 1 add  3 1 roll
+       -1 mul 1 add  3 1 roll
+       0
+       setcmykcolor   %% set CMYK
+  }ifelse
+  
+} bind def
+/oldsetgray /setgray load def
+/setgray {
+%%(in replacement setgray\n) print
+  % == % debug: pop last element and print it
+  % here we're at a gray value;
+  % http://www.tailrecursive.org/postscript/operators.html#setcymkcolor
+  % setgray: "gray-value must be a number from 0 (black) to 1 (white)."
+  % setcymkcolor: "The components must be between 0 (none) to 1 (full)."
+  % so convert here again:
+  
+  -1 mul 1 add    %% obtain K=-Gray on top of stack
+  0 0 0 4 -1 roll % push CMY:000 after K and roll down,
+                  % so top of stack becomes
+                  % ...:C:M:Y:K
+  setcmykcolor    %% now set(cmykcolor) K (as 1-Gray)
+  
+} bind def
+
+
+%~ # test: rgb2gray
+%~ gs -dNOPAUSE -dBATCH -sDEVICE=ps2write -sOutputFile=./blah-slide-hackRGB-gray.ps ./HackRGB.ps ./blah-slide-gsps2w.ps
+%~ # gray2cmyk
+%~ gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=./blah-slide-hackRGB-gray-ci.pdf ./HackRGB-cmyk-inv.ps ./blah-slide-hackRGB-gray.ps
+%~ # check separations - looks OK
+%~ gs -sDEVICE=tiffsep -dNOPAUSE -dBATCH -dSAFER -dFirstPage=1 -dLastPage=1 -sOutputFile=p%02d.tif blah-slide-hackRGB-gray-ci.pdf && eog p01.tif 2>/dev/null

@@ -320,3 +320,189 @@ HP Indigo:
 
 
 python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -col0 '#0ff' -col1 '#0ff' -tc '#000' -b1sw 0.2 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_2w_test' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -m=tags -tbc white -tm2 3 -tm2b 2.2 -tg -tgc '#FFF' -tgsw 0.2 -fwi normal
+
+
+# Adjust local dpi in tag for HP Indigo mm hints
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -col0 '#f0f' -col1 '#0ff' -tc '#000' -b1sw 0.2 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_2w_test_1219.2' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -m=tags -tbc white -tm2 3 -tm2b 2.2 -tg -tgc '#FFF' -tgsw 0.2 -fwi normal -cl -cld -udpi -ldpi 1219.2
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2000 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -col0 '#0ff' -col1 '#0ff' -tc '#000' -b1sw 0.2 -fsx 2.0 -fsi 1.5 -sb -ob '{family}dpp{tagdpp1200}{page_size}{first_id}-{last_id}_2w_test' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -m=tags -tbc white -tm2 3 -tm2b 2.2 -tg -tgc '#FFF' -tgsw 0.2 -fwi normal -cl -cld -uc
+
+
+# Convert to CMYK
+out=${in%.pdf}_CMY.pdf gs -dSAFER -dBATCH -dNOPAUSE -dNOCACHE -sDEVICE=pdfwrite -sColorConversionStrategy=CMYK -dProcessColorModel=/DeviceCMYK -sOutputFile=${out} ${in}
+
+
+out=${in%.pdf}_CMY.pdf gs -dSAFER -dBATCH -dNOPAUSE -dNOCACHE -sDEVICE=pdfwrite -dUseCIEColor -sColorConversionStrategy=CMYK -dProcessColorModel=/DeviceCMYK -sOutputFile=${out} ${in}
+
+
+gs -sDEVICE=pdfwrite -dNOPAUSE -dBATCH -dSAFER -sOutputFile="$out" HackRGB-cmyk-inv.ps "$in"
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2000 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -col0 '#ff0' -col1 '#ff0' -tc '#000' -b1sw 0.2 -fsx 2.0 -fsi 1.5 -sb -ob 'TAGS_{first_id}-{last_id}_2w_Y' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -m=tags -tbc white -tm2 3 -tm2b 2.2 -tg -tgc '#FFF' -tgsw 0.2 -fwi normal -cl -cld -uc -cmyk
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2000 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{tagid_bgcolor}_{tagcornercolor1}' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -fwi normal -cl -cld -uc -cmyk -b1sw 0.2 -tg -tgsw 0.2 -col0 'magenta' -col1 'yellow' 
+
+#TEST
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2000 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{tagid_bgcolor}' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -fwi normal -cl -cld -uc -cmyk -b1sw 0.2 -tg -tgsw 0.2 -col0 'magenta' -col1 'magenta' 
+
+
+# PRODUCTION
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{tagid_bgcolor}' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -fwi normal -cl -cld -uc -cmyk -b1sw 0.2 -tg -tgsw 0.2 -col0 'magenta' -col1 'magenta' 
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 1000 -v 1999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{tagid_bgcolor}' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -fwi normal -cl -cld -uc -cmyk -b1sw 0.2 -tg -tgsw 0.2 -col0 'magenta' -col1 'magenta' 
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{tagid_bgcolor}' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -fwi normal -cl -cld -uc -cmyk -b1sw 0.2 -tg -tgsw 0.2 -col0 'magenta' -col1 'magenta' 
+
+
+
+
+
+# TEST GOPRINT
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{local_dpi}_{tagid_bgcolor}' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -fwi normal -cl -cld -uc -cmyk -b1sw 0.2 -tg -tgsw 0.2 -col0 'magenta' -col1 'magenta'  -udpi -ldpi 1219.2 -tt
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 1000 -v 1999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{local_dpi}_{tagid_bgcolor}' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -fwi normal -cl -cld -uc -cmyk -b1sw 0.2 -tg -tgsw 0.2 -col0 'magenta' -col1 'magenta'  -udpi -ldpi 1219.2 -tt
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{local_dpi}_{tagid_bgcolor}' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -fwi normal -cl -cld -uc -cmyk -b1sw 0.2 -tg -tgsw 0.2 -col0 'magenta' -col1 'magenta'  -udpi -ldpi 1219.2 -tt
+
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{local_dpi}_{tagid_bgcolor}' -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -fwi normal -cl -cld -uc -cmyk -b1sw 0.2 -tg -tgsw 0.2 -col0 'magenta' -col1 'magenta'  -udpi -ldpi 1219.2 -tt
+
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{local_dpi}_{tagid_bgcolor}' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -fwi normal -cl -cld -uc -cmyk -b1sw 0.2 -tg -tgsw 0.2 -col0 'yellow' -col1 'yellow'  -tt
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 1000 -v 1999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{local_dpi}_{tagid_bgcolor}' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -fwi normal -cl -cld -uc -cmyk -b1sw 0.2 -tg -tgsw 0.2 -col0 'yellow' -col1 'yellow'  -tt
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{local_dpi}_{tagid_bgcolor}' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -fwi normal -cl -cld -uc -cmyk -b1sw 0.2 -tg -tgsw 0.2 -col0 'yellow' -col1 'yellow'  -tt
+
+
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{local_dpi}_{tagid_bgcolor}_{tagcornercolor1}' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -fwi bold -cl -cld -uc -cmyk -b1sw 0.3 -tg -tgsw 0.3 -col0 'white' -col1 'black'  -tt
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 1000 -v 1999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{local_dpi}_{tagid_bgcolor}_{tagcornercolor1}' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -fwi bold -cl -cld -uc -cmyk -b1sw 0.3 -tg -tgsw 0.3 -col0 'white' -col1 'black'  -tt
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{local_dpi}_{tagid_bgcolor}_{tagcornercolor1}' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -fwi bold -cl -cld -uc -cmyk -b1sw 0.3 -tg -tgsw 0.3 -col0 'white' -col1 'black'  -tt
+
+
+
+gs -dNOPAUSE -dBATCH -dSAFER -sDEVICE=tiffsep -dFirstPage=1 -dLastPage=1 -sOutputFile=p%02d.tif $inpdf
+
+
+gs -dNOPAUSE -dBATCH -dSAFER -sDEVICE=tiffsep -dFirstPage=1 -dLastPage=1 -sOutputFile=p%02d.tif $out
+
+
+
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{local_dpi}_{tagid_bgcolor}' -rm -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -fwi normal -cl -cld -uc -cmyk -b1sw 0.1 -tg -tgsw 0.1 -col0 'magenta' -col1 'magenta'  -udpi -ldpi 1219.2 -tt -no_rgb -cmyk
+
+
+gs -dNOPAUSE -dBATCH -dSAFER -sDEVICE=tiffsep -dFirstPage=1 -dLastPage=1 -r1200 -sOutputFile=p%02d.tif 'tags_2000-2999_tg0.2_1219.2_magenta_TAGS_CMYKBW.pdf'
+
+for f in *_*'(Black)'.tif; do echo $f; convert ${f} -crop 900x500+2376+9930 +repage -pointsize 18 label:"$f" -append ${f%.tif}_CROP.tif; done
+convert *_CROP.tif -adjoin All_CROP.tif
+
+
+
+
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{local_dpi}_{tagid_bgcolor}_{tagcornercolor1}' -kfv 0.2 -td '{family}/svg' -tbc '#FFF' -tgc 'white' -tm2 3 -tm2b 2.2 -cl -cld -uc -b1sw 0.2 -tg -tgsw 0.15 -col0 'black' -col1 'white'  -tt -rm -bw -ff "Lucida Sans" -fwi bold -tim 0.35 -fsi 1.5 -fsx 1.5 -fls 0.2
+
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{local_dpi}_{tagid_bgcolor}_{tagcornercolor1}' -kfv 0.2 -td '{family}/svg' -tbc '#FFF' -tgc 'white' -tm2 3 -tm2b 2.2 -cl -cld -uc -b1sw 0.2 -tg -tgsw 0.15 -col0 'black' -col1 'white'  -tt -rm -bw -ff "Lucida Sans" -fwi bold -tim 0.35 -fsi 1.5 -fsx 1.5 -fls 0.2
+
+#TEST
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -fsx 2.0 -fsi 1.5 -sb -m=tags -ob 'tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{local_dpi}_{tagid_bgcolor}_{tagcornercolor1}' -kfv 0.2 -td '{family}/svg' -tim 0.3 -tbc '#FFF' -tgc 'red' -tm2 3 -tm2b 2.2 -fwi normal -cl -cld -uc -b1sw 0.2 -tg -tgsw 0.15 -col0 'black' -col1 'white'  -tt -rm
+
+
+
+#for uv in 0000-0999 1000-1999; do
+for uv in 0000-0999; do
+for t in 0.00 0.05 0.10 0.20 0.30; do
+u=${uv%-*}
+v=${uv#*-}
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u $u -v $v -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -sb -m=tags -ob 'tags_{first_id:04}-{last_id:04}_tg{taggrid_strokewidth:.2f}_{local_dpi}_sh{ptshift}_{tagid_bgcolor}_{tagcornercolor1}' -kfv 0.2 -td '{family}/svg' -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -cl -cld -uc -b1sw 0.2 -col0 'black' -col1 'white'  -tt -rm -ff "Lucida Sans" -fwi bold -tim 0.35 -fsi 1.5 -fsx 1.2 -fls 0.4 -tg -tgsw $t -ptsh 0.0 -bw
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u $u -v $v -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -sb -m=tags -ob 'tags_{first_id:04}-{last_id:04}_tg{taggrid_strokewidth:.2f}_{local_dpi}_sh{ptshift}_{tagid_bgcolor}_{tagcornercolor1}' -kfv 0.2 -td '{family}/svg' -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -cl -cld -uc -b1sw 0.2 -col0 'black' -col1 'white'  -tt -rm -ff "Lucida Sans" -fwi bold -tim 0.35 -fsi 1.5 -fsx 1.2 -fls 0.4 -tg -tgsw $t -ptsh 0.5 -bw
+done
+done
+
+
+for uv in 0000-0999 1000-1999 2000-2999; do
+for t in 0.00 0.05 0.10 0.20 0.30; do
+u=${uv%-*}; v=${uv#*-}
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u $u -v $v -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -sb -m=tags -ob 'tags_{first_id:04}-{last_id:04}_tg{taggrid_strokewidth:.2f}_{local_dpi}_sh{ptshift}_{tagid_bgcolor}_{tagcornercolor1}' -kfv 0.2 -td '{family}/svg' -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -cl -cld -uc -b1sw 0.2 -col0 'white' -col1 'black'  -tt -rm -ff "Lucida Sans" -fwi bold -tim 0.35 -fsi 1.5 -fsx 1.2 -fls 0.4 -tg -tgsw $t -ptsh 0.0 -bw
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u $u -v $v -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -sb -m=tags -ob 'tags_{first_id:04}-{last_id:04}_tg{taggrid_strokewidth:.2f}_{local_dpi}_sh{ptshift}_{tagid_bgcolor}_{tagcornercolor1}' -kfv 0.2 -td '{family}/svg' -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -cl -cld -uc -b1sw 0.2 -col0 'white' -col1 'black'  -tt -rm -ff "Lucida Sans" -fwi bold -tim 0.35 -fsi 1.5 -fsx 1.2 -fls 0.4 -tg -tgsw $t -ptsh 0.5 -bw
+done
+done
+
+
+CUTS:
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -sb -m=all -ob 'tags_{first_id:04}-{last_id:04}_tg{taggrid_strokewidth:.2f}_{local_dpi}_sh{ptshift}' -kfv 0.0 -td '{family}/svg' -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -cl -cld -uc -b1sw 0.2 -col0 'white' -col1 'black'  -tt -rm -ff "Lucida Sans" -fwi bold -tim 0.35 -fsi 1.5 -fsx 1.2 -fls 0.4 -tg -tgsw 0.10 -ptsh 0.5 -cmyk
+
+
+for t in 0.00 0.05 0.10 0.20 0.30; do
+for sh in 0.0 0.5; do
+p=tags_; s=_white_black_TAGS_BW.pdf
+config=tg${t}_1200_sh${sh}
+echo ${p}xxxx-yyyy_${config}${s}
+gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=merged_0000-2999_${config}${s} ${p}0000-0999_${config}${s} ${p}1000-1999_${config}${s} ${p}2000-2999_${config}${s};
+done
+done
+
+
+for f in tags_0-999*.pdf; do mv $f tags_0000${f#tags_0}; done
+for f in tags_0000-999_*.pdf; do mv $f tags_0000-0${f#tags_0000-}; done
+for f in *_tg?.?_*.pdf; do mv $f `echo $f | sed 's/_\(tg0.[0-9]\)_/_\10_/'`; done
+
+for f in tags_0000_*.pdf; do mv $f tags_0000-{f#tags_0000_}; done
+
+for f in tags_0000-0999_*TAGS_BW.pdf; do g=${f#tags_0000-0999_}; echo $f tags_1000-1999_$g tags_2000-2999_$g; done
+
+p=tags_
+s=_white_black_TAGS_BW.pdf
+for f in ${p}0000-0999_*${s}; do config=${f#${p}????-????_}; config=${config%${s}}; echo ${p}0000-0999_${config}${s} ${p}1000-1999_${config}${s} ${p}2000-2999_${config}${s}; gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=merged_0000-2999_${config}${s} ${p}0000-0999_${config}${s} ${p}1000-1999_${config}${s} ${p}2000-2999_${config}${s}; done
+
+
+
+gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=test.pdf tags_*_tg0.10_1200_sh0.0_black_white_TAGS_BW.pdf 
+
+
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 0000 -v 0999 -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc '#000' -sb -m=view -ob 'tags_{first_id:04}-{last_id:04}_tg{taggrid_strokewidth:.2f}_{local_dpi}_sh{ptshift}' -kfv 0.0 -td '{family}/svg' -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -cl -cld -uc -b1sw 0.2 -col0 'white' -col1 'black'  -tt -rm -ff "Lucida Sans" -fwi bold -tim 0.35 -fsi 1.5 -fsx 1.2 -fls 0.4 -tg -tgsw 0.10 -ptsh 0.5 -pdf
+
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u 2000 -v 2999 -bx 3 -by 4 -pz letter -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy 250 -tc #000 -sb -m=tags -ob tags_{first_id}-{last_id}_tg{taggrid_strokewidth}_{local_dpi}_sh{ptshift}_{tagid_bgcolor}_{tagcornercolor1}' -kfv 0.2 -td {family}/svg -tbc #FFF -tgc #FFF -tm2 3 -tm2b 2.2 -cl -cld -uc -b1sw 0.2 -col0 black -col1 white -tt -rm -ff Lucida Sans -fwi bold -tim 0.35 -fsi 1.5 -fsx 1.2 -fls 0.4 -tg -tgsw 0.1 -ptsh 0.5 -bw
+
+
+Terron 2018-08
+
+c0=white
+c1=white
+for uv in 0000-0999 1000-1999 2000-2999; do
+  t=0.10
+  u=${uv%-*}; v=${uv#*-}
+  python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u $u -v $v -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy   250 -tc '#000' -sb -m=tags -ob 'tags_{first_id:04}-{last_id:04}_tg{taggrid_strokewidth:.2f}_{local_dpi}_sh{ptshift}_{tagid_bgcolor}_{tagcornercolor1}' -kfv 0.2 -td '{family}/svg' -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -cl -cld -uc -b1sw 0.2 -col0 $c0 -col1 $c1 -tt -rm -ff "Lucida Sans" -fwi bold -tim 0.35 -fsi 1.5 -fsx 1.2 -fls 0.4 -tg -tgsw $t -ptsh 0.5 -bw
+done
+
+c0=black
+c1=black
+for uv in 0000-0999 1000-1999 2000-2999; do
+  t=0.10
+  u=${uv%-*}; v=${uv#*-}
+  python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u $u -v $v -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy   250 -tc '#000' -sb -m=tags -ob 'tags_{first_id:04}-{last_id:04}_tg{taggrid_strokewidth:.2f}_{local_dpi}_sh{ptshift}_{tagid_bgcolor}_{tagcornercolor1}' -kfv 0.2 -td '{family}/svg' -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -cl -cld -uc -b1sw 0.2 -col0 $c0 -col1 $c1 -tt -rm -ff "Lucida Sans" -fwi bold -tim 0.35 -fsi 1.5 -fsx 1.2 -fls 0.4 -tg -tgsw $t -ptsh 0.5 -bw
+done
+
+
+p=tags_
+s=_${c0}_${c1}_TAGS_BW.pdf
+for f in ${p}0000-0999_*${s}; do config=${f#${p}????-????_}; config=${config%${s}}; echo ${p}0000-0999_${config}${s} ${p}1000-1999_${config}${s} ${p}2000-2999_${config}${s}; gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=merged_0000-2999_${config}${s} ${p}0000-0999_${config}${s} ${p}1000-1999_${config}${s} ${p}2000-2999_${config}${s}; done
+
+
+New tags April 8 2019
+
+c0=white
+c1=black
+uv=2000-2009
+t=0.10
+u=${uv%-*}; v=${uv#*-}
+python ../python/generatetagsheet.py -f tag25h5inv -p 5 -d 10 -u $u -v $v -bx 3 -by 4 -pz letter  -ktx 90 -kty 220 -kf 0.7 -ko 0.7 -cx 12.7 -cy 12.7 -px 17.7 -py 17.7 -bm 10 -tm 12,11 -tp -tpx 110 -tpy   250 -tc '#000' -sb -m=tags -ob 'tags_{first_id:04}-{last_id:04}_tg{taggrid_strokewidth:.2f}_{local_dpi}_sh{ptshift}_{tagid_bgcolor}_{tagcornercolor1}' -kfv 0.2 -td '{family}/svg' -tbc '#FFF' -tgc '#FFF' -tm2 3 -tm2b 2.2 -cl -cld -uc -b1sw 0.2 -col0 $c0 -col1 $c1 -tt -rm -ff "Lucida Sans" -fwi bold -tim 0.35 -fsi 1.5 -fsx 1.2 -fls 0.4 -tg -tgsw $t -ptsh 0.5 -bw -cb 11011 -cs 01010
+
+

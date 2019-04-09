@@ -17,6 +17,7 @@ class Layout(object):
   def __init__(self):
     self.cmdline = ""
     self.in2mm = 25.4
+    self.pt_dpi = self.in2mm/1200
     
     self.family = "tag25h5inv"
     self.tagcode_pix = 5          # image code
@@ -77,6 +78,7 @@ class Layout(object):
     self.fontsize_idext=5   # pix
     self.fontsize_scalex=2.0   # factor
     self.fontweight_id="700" #"900"
+    self.letterspacing=""
     self.tagid_margin=0.2
     
     self.custom = None
@@ -100,6 +102,12 @@ class Layout(object):
     # Tag parameters
     # self.tagsize = 1.6 # mm
     self.tagdpp1200 = 10   # number of dots per tagpixel at 1200 dpi
+    
+    self.use_local_dpi = False
+    self.local_dpi = 1200  # Hack to allow tags to use 1219.2 dpi hinting
+    self.ptshift = 0
+    
+    self.use_color = False
     
     self.tagborder_pix = 1       # inner border (included in img)
     self.tagmargin1_pix = 1      # minimal outer border for contrast
@@ -144,8 +152,12 @@ class Layout(object):
     self.show_kerftest = False
     self.show_guidelines = False
     self.guidelines_color = "magenta"
-    self.kerftest_left = 40
-    self.kerftest_top = 450
+    self.kerftest_left = 90
+    self.kerftest_top = 220
+    
+    self.show_test_tags = False
+    self.test_tags_x = 80
+    self.test_tags_y = 240
     
     self.show_page_title = True
     self.show_page_rect = False
@@ -165,7 +177,7 @@ class Layout(object):
     self.show_cmdline = False
     self.show_cmdline_date = False
     self.cmdline_left = 80
-    self.cmdline_top = 210
+    self.cmdline_top = 205
     self.cmdline_fontsize = 7.0
     self.cmdline_cols = 80
     self.date = ""
@@ -227,6 +239,11 @@ class Layout(object):
         self.border2color="none"
 
     # When recomputing, hint core alignments parameters to be integer at 300dpi
+    
+    if (self.use_local_dpi):
+        self.pt_dpi = self.in2mm/self.local_dpi
+    else:
+        self.pt_dpi = self.in2mm/1200
 
     self.sheet_y0 = self.apply_hint_mm(self.sheet_y0)
     self.sheet_x0 = self.apply_hint_mm(self.sheet_x0)
@@ -246,10 +263,10 @@ class Layout(object):
     
     self.laserkerf_um=round(self.laserkerf_mm*1000)
     self.laserkerf_pix=self.laserkerf_mm/self.pix2mm
-    if (self.laserkerf_mm_view==0):
-        self.laserkerf_pix_view=self.laserkerf_pix
-    else:
-        self.laserkerf_pix_view=self.laserkerf_mm_view/self.pix2mm
+    #if (self.laserkerf_mm_view==0):
+    #    self.laserkerf_pix_view=self.laserkerf_pix
+    #else:
+    self.laserkerf_pix_view=self.laserkerf_mm_view/self.pix2mm
     
     self.cutmargin_pix = self.laserkerf_pix/2
     self.cut_opening_pix = self.cut_opening_factor*self.laserkerf_pix
@@ -288,7 +305,7 @@ class Layout(object):
       self.show_tag_img = True
       self.show_tag_cut = False
       self.show_tag_cutkerf = False
-      self.show_block_rect = False
+      #self.show_block_rect = False # Do not override explicit flag
       self.show_block_title = True
       self.show_page_title = True
       self.show_test_patterns = True
@@ -299,7 +316,7 @@ class Layout(object):
       self.show_tag_img = False
       self.show_tag_cut = True
       self.show_tag_cutkerf = False
-      self.show_block_rect = False
+      #self.show_block_rect = False # Do not override explicit flag
       self.show_block_title = False
       self.show_page_title = True
       self.show_test_patterns = False
@@ -309,7 +326,7 @@ class Layout(object):
       self.show_tag = True
       self.show_tag_img = True
       self.show_tag_cut = True
-      self.show_tag_cutkerf = True
+      self.show_tag_cutkerf = (self.laserkerf_pix_view>0.0)
       self.show_block_rect = True
       self.show_block_title = True
       self.show_page_title = True
@@ -318,6 +335,8 @@ class Layout(object):
       self.modestring = "PREVIEW"
     else:
       print('ERROR: Unknown mode {}'.format(mode))
+      
+    
   
   def recomputepaths(self):
     # Compute the relative path from output sheet to svg images so the links 
@@ -383,7 +402,13 @@ class Generator(object):
         self.customsvg(output)
     else:
         self.generatesvg(output)
-    self.topdf(output)
+        
+    if (self.layout.to_pdf):
+        self.topdf(output)
+    if (self.layout.to_cmyk):
+        self.cmyk(output)
+    if (self.layout.to_cmyk_bw):
+        self.cmyk_bw(output)
     
     if (layout.removesvg):
         os.remove(output)
@@ -580,6 +605,30 @@ class Generator(object):
     print("   convert -density 1200 -background white -alpha remove -compress lzw output_tagsheet.svg_output.pdf output_tagsheet_1200dpi.tiff")
     os.system("convert -density 1200 -background white -alpha remove -compress lzw output_tagsheet.svg_output.pdf output_tagsheet_1200dpi.tiff")
 
+  def cmyk(self, output=None): # FIXME
+    if (output is None):
+        output=self.layout.output
+    if output.endswith('.pdf') or output.endswith('.svg'):
+        name = output[:-4]
+    else:
+        name = output
+    output_pdf = name+'.pdf'
+    output_cmyk = name+'_CMYK.pdf'
+    print("Convert {} to CMYK PDF {}:".format(output,output_cmyk))
+    os.system('   svg2cmyk.sh "{}"'.format(output))
+
+  def cmyk_bw(self, output=None): # FIXME
+    if (output is None):
+        output=self.layout.output
+    if output.endswith('.pdf') or output.endswith('.svg'):
+        name = output[:-4]
+    else:
+        name = output
+    output_pdf = name+'.pdf'
+    output_cmyk = name+'_BW.pdf'
+    print("Convert {} to CMYK (B/W) PDF {}:".format(output,output_cmyk))
+    os.system('   svg2cmyk_bw.sh "{}"'.format(output))
+
 
 
 
@@ -650,6 +699,18 @@ if __name__ == "__main__":
     group.add_argument('-r', '--rasterize',  
                         dest='rasterize', action='store_true',
                         help='rasterize output PDF')
+    group.add_argument('-pdf', '--to_pdf',  
+                        dest='to_pdf', action='store_true',
+                        help='convert SVG to RGB PDF (default: %(default)s)')
+    group.add_argument('-no_rgb', '--no_rgb',  
+                        dest='to_pdf', action='store_false',
+                        help='prevent RGB PDF output (default: %(default)s)')
+    group.add_argument('-cmyk', '--to_cmyk',  
+                        dest='to_cmyk', action='store_true',
+                        help='convert output SVG to CMYK PDF (default: %(default)s)')
+    group.add_argument('-bw', '--to_cmyk_bw',  
+                        dest='to_cmyk_bw', action='store_true',
+                        help='convert output SVG to CMYK pure Black PDF (default: %(default)s)')
                         
     group = parser.add_argument_group('Tag family info')
     group.add_argument('-f', '--family', metavar='<family>', 
@@ -693,6 +754,12 @@ if __name__ == "__main__":
     group.add_argument('-col2', '--tagcornercolor2', 
                         dest='tagcornercolor2', default=layout.tagcornercolor2,
                         help='tag color 2 (default: %(default)s)')
+    group.add_argument('-cb', '--codebottom', 
+                        dest='codebottom', default=None, type=str,
+                        help='binary code for bottom (default: %(default)s)')
+    group.add_argument('-cs', '--codesides', 
+                        dest='codesides', default=None, type=str,
+                        help='binary code for sides (default: %(default)s)')
     group.add_argument('-sbc', '--show_bitcode', action='store_true',
                         dest='show_bitcode', default=layout.show_bitcode,
                         help='Show color bitcode instead of id (default: %(default)s)')
@@ -712,6 +779,9 @@ if __name__ == "__main__":
     group.add_argument('-ff', '--fontfamily',
                         dest='fontfamily', default=layout.fontfamily,
                         help='Font family for tag ID text (default: %(default)s)')
+    group.add_argument('-fls', '--letterspacing',
+                        dest='letterspacing', default=layout.letterspacing,
+                        help='Font letter spacing for tag ID text (default: %(default)s)')
     group.add_argument('-fsi', '--fontsize_id',
                         dest='fontsize_id', default=layout.fontsize_id,
                         help='Tag ID fontsize in tag pixels (default: %(default)s)')
@@ -726,6 +796,20 @@ if __name__ == "__main__":
     group.add_argument('--dpp', '-d', type=int,
                         dest='tagdpp1200', default=layout.tagdpp1200,
                         help='number of printer dots per pixel of the tag at 1200 dpi.\nFor 6 pixels code, dpp=8 -> 1.37mm, dpp=9 -> 1.54mm tag, dpp=10 -> 1.71mm tag')
+    group.add_argument('-udpi', '--use_local_dpi', action='store_true',
+                        dest='use_local_dpi', default=layout.use_local_dpi,
+                        help='Use local DPI if not 1200 (default: %(default)s)')
+    group.add_argument('-ldpi', '--local_dpi', type=float,
+                        dest='local_dpi', default=layout.local_dpi,
+                        help='Local DPI value (default: %(default)s)')
+    group.add_argument('-ptsh', '--ptshift', type=float,
+                        dest='ptshift', default=layout.ptshift,
+                        help='Shift in dpi pts from round hint (default: %(default)s)')
+                        
+    group.add_argument('-uc', '--use_color', action='store_true',
+                        dest='use_color', default=layout.use_color,
+                        help='Use color patterns (default: %(default)s)')
+                        
     group.add_argument('-c', '--custom',  metavar='<layout name>',
                         dest='custom', default=layout.custom,
                         choices='custom_tag25h5,custom_tag25h6,custom_tag36h10,custom_tag25h6_dpp10,custom_test'.split(','),
@@ -801,6 +885,15 @@ if __name__ == "__main__":
     group.add_argument('-tpy', '--test_patterns_y', type=float,
                         dest='test_patterns_y', default=layout.kerftest_top,
                         help='top corner of Siemens test pattern (default: %(default)s)')
+    group.add_argument('-tt', '--show_test_tags', action='store_true',
+                        dest='show_test_tags', default=layout.show_test_tags,
+                        help='show test tags (default: %(default)s)')
+    group.add_argument('-ttx', '--test_tags_x', type=float,
+                        dest='test_tags_x', default=layout.test_tags_x,
+                        help='left corner of test tags (default: %(default)s)')
+    group.add_argument('-tty', '--test_tags_y', type=float,
+                        dest='test_tags_y', default=layout.test_tags_y,
+                        help='top corner of test tags (default: %(default)s)')
                         
     group.add_argument('-cl', '--show_cmdline', action='store_true',
                         dest='show_cmdline', default=layout.show_cmdline,
@@ -831,6 +924,9 @@ if __name__ == "__main__":
                         dest='taggrid_strokewidth', default=layout.taggrid_strokewidth,
                         help='stroke width of tag grid (default: %(default)s)')
 
+    group.add_argument('-br', '--show_block_rect', action='store_true',
+                        dest='show_block_rect', default=layout.show_block_rect,
+                        help='show block bounding box (default: %(default)s)')
                         
     group = parser.add_argument_group('Lasercutting')
     group.add_argument('-kf', '--laserkerf_mm', metavar='<kerf in mm>', 
